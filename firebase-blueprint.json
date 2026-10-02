@@ -1,0 +1,196 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access control and parent-child association",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "teacher", "parent", "student"] },
+        "phone": { "type": "string" },
+        "avatar": { "type": "string" },
+        "classId": { "type": "string" },
+        "parentOfStudentId": { "type": "string" },
+        "accountStatus": { "type": "string", "enum": ["active", "locked"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "English center class details with max 15 capacity",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "className": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "studentList": { "type": "array" },
+        "level": { "type": "string" },
+        "schedule": { "type": "string" },
+        "room": { "type": "string" },
+        "maxCapacity": { "type": "number" }
+      },
+      "required": ["id", "className", "teacherId"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily student attendance with detailed teacher notes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string", "enum": ["present", "absent"] },
+        "note": { "type": "string" }
+      },
+      "required": ["id", "classId", "studentId", "date", "status"]
+    },
+    "Grade": {
+      "title": "Grade",
+      "description": "4-skills and periodic test score",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "skill": { "type": "string", "enum": ["listening", "speaking", "reading", "writing", "test"] },
+        "score": { "type": "number" },
+        "date": { "type": "string" },
+        "comment": { "type": "string" }
+      },
+      "required": ["id", "studentId", "skill", "score", "date"]
+    },
+    "Assignment": {
+      "title": "Assignment",
+      "description": "Homework and student submissions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileName": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "submissions": { "type": "array" }
+      },
+      "required": ["id", "classId", "title", "dueDate"]
+    },
+    "Evaluation": {
+      "title": "Evaluation",
+      "description": "Praise, reward or discipline remark for student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "teacherNote": { "type": "string" },
+        "type": { "type": "string", "enum": ["reward", "praise", "discipline"] },
+        "date": { "type": "string" },
+        "teacherId": { "type": "string" }
+      },
+      "required": ["id", "studentId", "teacherNote", "type", "date"]
+    },
+    "Certificate": {
+      "title": "Certificate",
+      "description": "Student certificate or award file",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "certName": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "certType": { "type": "string" },
+        "verificationCode": { "type": "string" }
+      },
+      "required": ["id", "studentId", "certName", "fileUrl", "issueDate"]
+    },
+    "Leaderboard": {
+      "title": "Leaderboard",
+      "description": "Top 1 student of class for monthly honors",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "classId": { "type": "string" },
+        "topStudentId": { "type": "string" },
+        "month": { "type": "string" },
+        "score": { "type": "number" },
+        "highlightNote": { "type": "string" }
+      },
+      "required": ["id", "classId", "topStudentId", "month", "score"]
+    },
+    "HomeBanner": {
+      "title": "HomeBanner",
+      "description": "Public home banner images and slogans",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "badgeText": { "type": "string" },
+        "actionText": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "title", "imageUrl"]
+    },
+    "CenterAnnouncement": {
+      "title": "CenterAnnouncement",
+      "description": "News and announcements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["id", "title", "content", "date"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "Collection of user profiles and authentication metadata"
+    },
+    "/classes/{classId}": {
+      "schema": { "$ref": "Class" },
+      "description": "Collection of up to 15 English center classes"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": { "$ref": "Attendance" },
+      "description": "Daily attendance records"
+    },
+    "/grades/{gradeId}": {
+      "schema": { "$ref": "Grade" },
+      "description": "Academic scores for 4 skills and tests"
+    },
+    "/assignments/{assignmentId}": {
+      "schema": { "$ref": "Assignment" },
+      "description": "Homework and student submissions"
+    },
+    "/evaluations/{evaluationId}": {
+      "schema": { "$ref": "Evaluation" },
+      "description": "Teacher praises, rewards and discipline notes"
+    },
+    "/certificates/{certificateId}": {
+      "schema": { "$ref": "Certificate" },
+      "description": "Student certificate documents"
+    },
+    "/leaderboards/{leaderboardId}": {
+      "schema": { "$ref": "Leaderboard" },
+      "description": "Monthly top 1 honors"
+    },
+    "/home_banners/{bannerId}": {
+      "schema": { "$ref": "HomeBanner" },
+      "description": "Home banner images and promotions"
+    },
+    "/announcements/{announcementId}": {
+      "schema": { "$ref": "CenterAnnouncement" },
+      "description": "Official center news and notices"
+    }
+  }
+}

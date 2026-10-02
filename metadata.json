@@ -1,0 +1,6 @@
+{
+  "name": "LookEnglish Management & Flutter Architecture Studio",
+  "description": "Hệ thống quản lý Trung tâm Ngoại ngữ và Bộ kiến trúc ứng dụng Flutter chuẩn Senior: Quản lý 15 lớp học, Điểm danh & Ghi chú, Bảng điểm 4 kỹ năng, Bài tập & Nộp bài, Chứng chỉ, Bảng vàng Top 1 và Trợ lý AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

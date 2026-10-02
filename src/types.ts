@@ -110,6 +110,17 @@ export interface HomeBannerModel {
   isActive: boolean;
 }
 
+export interface HomeMediaItemModel {
+  id: string;
+  tag: string; // e.g. 'COMPETITION', 'CLASSROOM', 'WORKSHOP', 'AWARDS', 'VIDEO'
+  title: string;
+  description: string;
+  date: string;
+  imageUrl: string;
+  videoUrl?: string;
+  type?: 'image' | 'video';
+}
+
 export interface CenterAnnouncementModel {
   id: string;
   title: string;

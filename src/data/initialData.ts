@@ -692,6 +692,55 @@ export const INITIAL_HOME_BANNERS: import('../types').HomeBannerModel[] = [
   },
 ];
 
+export const INITIAL_MEDIA_ITEMS: import('../types').HomeMediaItemModel[] = [
+  {
+    id: 'med_01',
+    tag: 'COMPETITION',
+    title: 'Hội Thi Hùng Biện Tiếng Anh LookEnglish Speech Contest 2026',
+    description: 'Hơn 80 học sinh đã thể hiện tư duy phản biện sắc bén và khả năng giao tiếp lưu loát về các vấn đề toàn cầu.',
+    date: '2026-09-28',
+    imageUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&auto=format&fit=crop&q=80',
+    type: 'image',
+  },
+  {
+    id: 'med_02',
+    tag: 'CLASSROOM',
+    title: 'Giờ Học Tương Tác Sôi Nổi Lớp Starters A1 Cùng Thầy Robert',
+    description: 'Phương pháp học qua trò chơi vận động (TPR) giúp các bé tiếp thu từ vựng tự nhiên và tự tin phát âm chuẩn bản ngữ.',
+    date: '2026-09-26',
+    imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&auto=format&fit=crop&q=80',
+    type: 'image',
+  },
+  {
+    id: 'med_03',
+    tag: 'WORKSHOP',
+    title: 'Workshop: Đồng Hành Cùng Con Chinh Phục Cambridge 15 Khiên',
+    description: 'Buổi tọa đàm chuyên sâu giữa Giám đốc Đào tạo và phụ huynh về lộ trình Starters - Movers - Flyers.',
+    date: '2026-09-22',
+    imageUrl: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=800&auto=format&fit=crop&q=80',
+    type: 'image',
+  },
+  {
+    id: 'med_04',
+    tag: 'AWARDS',
+    title: 'Lễ Tuyên Dương Học Bổng LookEnglish Honor Roll Quý 3',
+    description: 'Trao thưởng cúp vàng và giấy chứng nhận cho các thủ khoa dẫn đầu thành tích 4 kỹ năng.',
+    date: '2026-09-18',
+    imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=80',
+    type: 'image',
+  },
+  {
+    id: 'med_05',
+    tag: 'VIDEO',
+    title: 'Video Hoạt Động Trải Nghiệm Tiếng Anh Thực Tế Của Học Viên Teens',
+    description: 'Phỏng vấn du khách nước ngoài tự tin và hoàn thành xuất sắc thử thách quay video vlog tiếng Anh.',
+    date: '2026-09-15',
+    imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
+    videoUrl: 'https://www.youtube.com',
+    type: 'video',
+  },
+];
+
 export const INITIAL_ANNOUNCEMENTS: import('../types').CenterAnnouncementModel[] = [
   {
     id: 'anc_01',

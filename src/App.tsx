@@ -11,6 +11,7 @@ import {
   LeaderboardModel,
   HomeBannerModel,
   CenterAnnouncementModel,
+  HomeMediaItemModel,
 } from './types';
 import {
   INITIAL_USERS,
@@ -23,6 +24,7 @@ import {
   INITIAL_LEADERBOARDS,
   INITIAL_HOME_BANNERS,
   INITIAL_ANNOUNCEMENTS,
+  INITIAL_MEDIA_ITEMS,
 } from './data/initialData';
 import { Header } from './components/Header';
 import { RoleTabsBar } from './components/RoleTabsBar';
@@ -50,6 +52,7 @@ import {
   Bot,
   Users,
   GraduationCap,
+  Newspaper,
   Lock,
 } from 'lucide-react';
 
@@ -58,7 +61,7 @@ export default function App() {
   const [mainRoleTab, setMainRoleTab] = useState<'parent' | 'teacher' | 'admin' | 'news'>('news');
 
   // Active sub-features
-  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'ai'>('classes');
+  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'cms' | 'ai'>('classes');
   const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'grades' | 'homework' | 'evaluations' | 'classes' | 'ai'>('attendance');
   const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'attendance' | 'homework' | 'certificates' | 'leaderboard' | 'ai'>('grades');
 
@@ -135,6 +138,12 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_ANNOUNCEMENTS;
   });
 
+  // Media items (Images and Videos for Center)
+  const [mediaItems, setMediaItems] = useState<HomeMediaItemModel[]>(() => {
+    const saved = localStorage.getItem('look_english_media_items');
+    return saved ? JSON.parse(saved) : INITIAL_MEDIA_ITEMS;
+  });
+
   // Save changes to localStorage
   useEffect(() => {
     localStorage.setItem('look_english_users', JSON.stringify(users));
@@ -167,6 +176,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('look_english_leaderboard', JSON.stringify(leaderboard));
   }, [leaderboard]);
+
+  useEffect(() => {
+    localStorage.setItem('look_english_announcements', JSON.stringify(announcements));
+  }, [announcements]);
+
+  useEffect(() => {
+    localStorage.setItem('look_english_media_items', JSON.stringify(mediaItems));
+  }, [mediaItems]);
 
   const currentUser = currentUserId ? users.find((u) => u.id === currentUserId) : undefined;
   const isLoggedIn = currentRole !== 'guest' && !!currentUser;
@@ -222,7 +239,7 @@ export default function App() {
 
     // If NOT logged in: Cannot view anything other than 'news'!
     if (!isLoggedIn) {
-      setAuthModalMode('login');
+      setAuthModalMode(tab === 'parent' ? 'login' : 'login');
       setAuthModalOpen(true);
       return;
     }
@@ -255,7 +272,6 @@ export default function App() {
   const handleAddClass = (newClassData: Omit<ClassModel, 'id'>) => {
     const newClass: ClassModel = { ...newClassData, id: `cls_${Date.now()}` };
     setClasses((prev) => [...prev, newClass]);
-    // Assign to teacher if teacherId provided
     if (newClass.teacherId) {
       setUsers((prev) =>
         prev.map((u) => {
@@ -351,6 +367,34 @@ export default function App() {
     );
   };
 
+  // Media (Images & Videos) CRUD Handlers for Admin
+  const handleAddMediaItem = (itemData: Omit<HomeMediaItemModel, 'id'>) => {
+    const newItem: HomeMediaItemModel = { ...itemData, id: `med_${Date.now()}` };
+    setMediaItems((prev) => [newItem, ...prev]);
+  };
+
+  const handleUpdateMediaItem = (id: string, data: Partial<HomeMediaItemModel>) => {
+    setMediaItems((prev) => prev.map((m) => (m.id === id ? { ...m, ...data } : m)));
+  };
+
+  const handleDeleteMediaItem = (id: string) => {
+    setMediaItems((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  // Announcements CRUD Handlers for Admin
+  const handleAddAnnouncement = (ancData: Omit<CenterAnnouncementModel, 'id'>) => {
+    const newAnc: CenterAnnouncementModel = { ...ancData, id: `anc_${Date.now()}` };
+    setAnnouncements((prev) => [newAnc, ...prev]);
+  };
+
+  const handleUpdateAnnouncement = (id: string, data: Partial<CenterAnnouncementModel>) => {
+    setAnnouncements((prev) => prev.map((a) => (a.id === id ? { ...a, ...data } : a)));
+  };
+
+  const handleDeleteAnnouncement = (id: string) => {
+    setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+  };
+
   // Attendance Batch
   const handleSaveBatchAttendance = (items: AttendanceModel[]) => {
     setAttendance((prev) => {
@@ -382,6 +426,10 @@ export default function App() {
   const handleAddAssignment = (asgData: Omit<AssignmentModel, 'id'>) => {
     const newAsg: AssignmentModel = { ...asgData, id: `asg_${Date.now()}` };
     setAssignments((prev) => [newAsg, ...prev]);
+  };
+
+  const handleDeleteAssignment = (assignmentId: string) => {
+    setAssignments((prev) => prev.filter((a) => a.id !== assignmentId));
   };
 
   const handleSubmitHomework = (
@@ -509,10 +557,11 @@ export default function App() {
           ============================================================
         */}
 
-        {/* TAB 1: BẢN TIN (CHỈ XEM ĐƯỢC KHI CHƯA ĐĂNG NHẬP, HOẶC XEM BẢNG VÀNG) */}
+        {/* TAB 1: BẢN TIN TRUNG TÂM (ADMIN CÓ QUYỀN THÊM, SỬA, XÓA TRỰC TIẾP) */}
         {mainRoleTab === 'news' && (
           <PublicHome
             banners={homeBanners}
+            mediaItems={mediaItems}
             announcements={announcements}
             leaderboards={leaderboard}
             users={users}
@@ -525,9 +574,13 @@ export default function App() {
               setAuthModalMode('register');
               setAuthModalOpen(true);
             }}
-            onNavigateToLeaderboard={() => {
-              // Open Top 1 directly
-            }}
+            onAddMediaItem={handleAddMediaItem}
+            onUpdateMediaItem={handleUpdateMediaItem}
+            onDeleteMediaItem={handleDeleteMediaItem}
+            onAddAnnouncement={handleAddAnnouncement}
+            onUpdateAnnouncement={handleUpdateAnnouncement}
+            onDeleteAnnouncement={handleDeleteAnnouncement}
+            onNavigateToLeaderboard={() => {}}
           />
         )}
 
@@ -804,6 +857,7 @@ export default function App() {
                 currentRole="teacher"
                 currentUserId={currentUser?.id || 'usr_teacher_1'}
                 onAddAssignment={handleAddAssignment}
+                onDeleteAssignment={handleDeleteAssignment}
                 onSubmitHomework={handleSubmitHomework}
                 onGradeSubmission={handleGradeSubmission}
               />
@@ -842,7 +896,7 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 4: ADMIN (TOÀN QUYỀN HỆ THỐNG VỚI HƠN 20 LỚP HỌC & QUẢN LÝ HỌC VIÊN) */}
+        {/* TAB 4: ADMIN (TOÀN QUYỀN HỆ THỐNG VỚI HƠN 20 LỚP HỌC, CMS VÀ QUẢN LÝ HỌC VIÊN) */}
         {mainRoleTab === 'admin' && isLoggedIn && (
           <div className="space-y-4">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold">
@@ -868,6 +922,18 @@ export default function App() {
               >
                 <GraduationCap className="w-3.5 h-3.5" />
                 <span>Danh Sách Học Viên</span>
+              </button>
+
+              <button
+                onClick={() => setAdminSubFeature('cms')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                  adminSubFeature === 'cms'
+                    ? 'bg-[#1E40AF] text-white shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Newspaper className="w-3.5 h-3.5" />
+                <span>Bản Tin & CMS</span>
               </button>
 
               <button
@@ -990,6 +1056,26 @@ export default function App() {
               />
             )}
 
+            {adminSubFeature === 'cms' && (
+              <PublicHome
+                banners={homeBanners}
+                mediaItems={mediaItems}
+                announcements={announcements}
+                leaderboards={leaderboard}
+                users={users}
+                currentRole="admin"
+                onLoginClick={() => {}}
+                onRegisterClick={() => {}}
+                onAddMediaItem={handleAddMediaItem}
+                onUpdateMediaItem={handleUpdateMediaItem}
+                onDeleteMediaItem={handleDeleteMediaItem}
+                onAddAnnouncement={handleAddAnnouncement}
+                onUpdateAnnouncement={handleUpdateAnnouncement}
+                onDeleteAnnouncement={handleDeleteAnnouncement}
+                onNavigateToLeaderboard={() => {}}
+              />
+            )}
+
             {adminSubFeature === 'accounts' && (
               <AccountManager
                 users={users}
@@ -1029,6 +1115,7 @@ export default function App() {
                 currentRole="admin"
                 currentUserId={currentUserId}
                 onAddAssignment={handleAddAssignment}
+                onDeleteAssignment={handleDeleteAssignment}
                 onSubmitHomework={handleSubmitHomework}
                 onGradeSubmission={handleGradeSubmission}
               />
@@ -1095,9 +1182,9 @@ export default function App() {
           <div className="flex items-center gap-4 text-[11px] font-semibold text-slate-400">
             <span>Hơn 20 Lớp Học</span>
             <span>•</span>
-            <span>Pre-kids, Kids, Teens, A1-C1, IELTS</span>
+            <span>CMS Truyền Thông & Bản Tin</span>
             <span>•</span>
-            <span>Phân Quyền Giáo Viên</span>
+            <span>Pre-kids, Kids, Teens, A1-C1, IELTS</span>
           </div>
         </div>
       </footer>

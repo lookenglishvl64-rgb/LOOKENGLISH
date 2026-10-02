@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GradeModel, SkillType, UserModel, UserRole } from '../types';
+import { GradeModel, SkillType, UserModel, UserRole, ClassModel } from '../types';
 import {
   Award,
   Headphones,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EvaluationModel, EvaluationType, UserModel, UserRole } from '../types';
+import { EvaluationModel, EvaluationType, UserModel, UserRole, ClassModel } from '../types';
 import {
   Sparkles,
   ThumbsUp,

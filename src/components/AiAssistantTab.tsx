@@ -46,6 +46,12 @@ Hôm nay tôi có thể hỗ trợ gì cho bạn? Hãy chọn câu hỏi gợi �
       'Chiến lược tổ chức kỳ thi thử Mock Test định kỳ',
       'Quy trình cấp và lưu trữ chứng chỉ điện tử an toàn',
     ],
+    guest: [
+      'Chương trình học tiếng Anh chuẩn quốc tế tại LookEnglish',
+      'Học phí và ưu đãi các khóa học Cambridge, IELTS',
+      'Lộ trình đào tạo từ Pre-kids đến IELTS Master 7.5+',
+      'Quy trình kiểm tra đầu vào và tư vấn xếp lớp',
+    ],
   };
 
   const handleSend = async (textToSend?: string) => {

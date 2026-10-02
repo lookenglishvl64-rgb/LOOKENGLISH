@@ -774,6 +774,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_01',
     classId: 'cls_ielts_01',
     teacherId: 'usr_teacher_1',
+    taName: 'Cô Phương Thảo (TA)',
     dayOfWeek: 1, // Thứ 2
     dayOfWeekText: 'Thứ Hai',
     timeSlot: '18:00 - 19:30',
@@ -786,6 +787,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_02',
     classId: 'cls_kids_01',
     teacherId: 'usr_teacher_2',
+    taName: 'Thầy Quang Huy (TA)',
     dayOfWeek: 1, // Thứ 2
     dayOfWeekText: 'Thứ Hai',
     timeSlot: '17:30 - 19:00',
@@ -811,6 +813,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_04',
     classId: 'cls_a2_01',
     teacherId: 'usr_teacher_2',
+    taName: 'Cô Kim Ngân (TA)',
     dayOfWeek: 2, // Thứ 3
     dayOfWeekText: 'Thứ Ba',
     timeSlot: '17:30 - 19:00',
@@ -823,6 +826,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_05',
     classId: 'cls_ielts_02',
     teacherId: 'usr_teacher_1',
+    taName: 'Thầy Đức Anh (TA)',
     dayOfWeek: 2, // Thứ 3
     dayOfWeekText: 'Thứ Ba',
     timeSlot: '18:00 - 19:30',
@@ -848,6 +852,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_07',
     classId: 'cls_ielts_01',
     teacherId: 'usr_teacher_1',
+    taName: 'Cô Phương Thảo (TA)',
     dayOfWeek: 3, // Thứ 4
     dayOfWeekText: 'Thứ Tư',
     timeSlot: '18:00 - 19:30',
@@ -860,6 +865,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_08',
     classId: 'cls_kids_01',
     teacherId: 'usr_teacher_2',
+    taName: 'Thầy Quang Huy (TA)',
     dayOfWeek: 3, // Thứ 4
     dayOfWeekText: 'Thứ Tư',
     timeSlot: '17:30 - 19:00',
@@ -873,6 +879,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_09',
     classId: 'cls_a2_01',
     teacherId: 'usr_teacher_2',
+    taName: 'Cô Kim Ngân (TA)',
     dayOfWeek: 4, // Thứ 5
     dayOfWeekText: 'Thứ Năm',
     timeSlot: '17:30 - 19:00',
@@ -886,6 +893,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_10',
     classId: 'cls_ielts_01',
     teacherId: 'usr_teacher_1',
+    taName: 'Cô Phương Thảo (TA)',
     dayOfWeek: 5, // Thứ 6
     dayOfWeekText: 'Thứ Sáu',
     timeSlot: '18:00 - 19:30',
@@ -894,11 +902,28 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     sessionTopic: 'IELTS Mock Test Review & Band Score Advice',
     durationHours: 1.5,
   },
+  // Buổi học đột xuất / Học bù mẫu
+  {
+    id: 'sch_extra_01',
+    classId: 'cls_ielts_01',
+    teacherId: 'usr_teacher_1',
+    taName: 'Cô Phương Thảo (TA)',
+    dayOfWeek: 6, // Thứ Bảy
+    dayOfWeekText: 'Thứ Bảy',
+    timeSlot: '14:00 - 15:30',
+    room: 'Phòng Lab A201',
+    status: 'scheduled',
+    sessionTopic: 'Chữa đề Writing chuyên sâu & Luyện Mock Test bù',
+    durationHours: 1.5,
+    isExtraOrMakeUp: true,
+    changeNote: 'Lịch học bù tăng cường kỹ năng Writing đợt thi tháng 10 theo thông báo của Admin.',
+  },
   // Thứ 7 & CN
   {
     id: 'sch_11',
     classId: 'cls_prekids_01',
     teacherId: 'usr_teacher_2',
+    taName: 'Cô Lan Anh (TA)',
     dayOfWeek: 6, // Thứ 7
     dayOfWeekText: 'Thứ Bảy',
     timeSlot: '08:00 - 09:30',
@@ -923,6 +948,7 @@ export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[
     id: 'sch_13',
     classId: 'cls_prekids_01',
     teacherId: 'usr_teacher_2',
+    taName: 'Cô Lan Anh (TA)',
     dayOfWeek: 0, // Chủ nhật
     dayOfWeekText: 'Chủ Nhật',
     timeSlot: '08:00 - 09:30',
@@ -950,6 +976,7 @@ export const INITIAL_TEACHER_TIMESHEETS: import('../types').TeacherTimesheetMode
     id: 'ts_01',
     teacherId: 'usr_teacher_1',
     classId: 'cls_ielts_01',
+    taName: 'Cô Phương Thảo (TA)',
     date: '2026-10-02',
     timeSlot: '18:00 - 19:30',
     room: 'Phòng Lab A201',
@@ -962,6 +989,7 @@ export const INITIAL_TEACHER_TIMESHEETS: import('../types').TeacherTimesheetMode
     id: 'ts_02',
     teacherId: 'usr_teacher_2',
     classId: 'cls_a2_01',
+    taName: 'Cô Kim Ngân (TA)',
     date: '2026-10-01',
     timeSlot: '17:30 - 19:00',
     room: 'Phòng Kids C102',
@@ -986,6 +1014,7 @@ export const INITIAL_TEACHER_TIMESHEETS: import('../types').TeacherTimesheetMode
     id: 'ts_04',
     teacherId: 'usr_teacher_4',
     classId: 'cls_kids_02',
+    taName: 'Thầy Quang Huy (TA)',
     date: '2026-09-29',
     timeSlot: '17:30 - 19:00',
     room: 'Phòng Kids C103',

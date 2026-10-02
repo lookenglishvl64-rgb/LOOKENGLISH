@@ -134,6 +134,7 @@ export interface ScheduleSessionModel {
   id: string;
   classId: string;
   teacherId: string;
+  taName?: string; // Tên trợ giảng (TA) hỗ trợ lớp nếu có
   dayOfWeek: number; // 1: T2, 2: T3, 3: T4, 4: T5, 5: T6, 6: T7, 0: CN
   dayOfWeekText: string; // e.g. "Thứ Hai", "Thứ Ba", ...
   timeSlot: string; // e.g. "18:00 - 19:30"
@@ -141,12 +142,15 @@ export interface ScheduleSessionModel {
   status?: 'scheduled' | 'completed' | 'cancelled';
   sessionTopic?: string;
   durationHours?: number; // e.g. 1.5
+  isExtraOrMakeUp?: boolean; // Đánh dấu lịch học thay đổi đột xuất hoặc học bù
+  changeNote?: string; // Ghi chú lý do thay đổi đột xuất
 }
 
 export interface TeacherTimesheetModel {
   id: string;
   teacherId: string;
   classId: string;
+  taName?: string; // Trợ giảng đi cùng ca dạy
   date: string; // YYYY-MM-DD
   timeSlot: string;
   room: string;

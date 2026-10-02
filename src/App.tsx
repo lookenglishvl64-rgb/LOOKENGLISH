@@ -68,7 +68,7 @@ export default function App() {
 
   // Active sub-features
   const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'schedule' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'cms' | 'ai'>('classes');
-  const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'schedule' | 'grades' | 'homework' | 'evaluations' | 'classes' | 'ai'>('attendance');
+  const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'schedule' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'classes' | 'ai'>('attendance');
   const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'certificates' | 'leaderboard' | 'ai'>('grades');
 
   // Default state: 'guest' (Chưa đăng nhập - chỉ xem được bản tin)
@@ -426,9 +426,30 @@ export default function App() {
     setSessions((prev) => [...prev, newSession]);
   };
 
+  const handleUpdateSession = (sessionId: string, data: Partial<ScheduleSessionModel>) => {
+    setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, ...data } : s)));
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+  };
+
   const handleAddTimesheetRecord = (recordData: Omit<TeacherTimesheetModel, 'id'>) => {
     const newTs: TeacherTimesheetModel = { ...recordData, id: `ts_${Date.now()}` };
     setTimesheets((prev) => [newTs, ...prev]);
+  };
+
+  const handleUpdateTimesheetRecord = (
+    timesheetId: string,
+    data: Partial<TeacherTimesheetModel>
+  ) => {
+    setTimesheets((prev) =>
+      prev.map((ts) => (ts.id === timesheetId ? { ...ts, ...data } : ts))
+    );
+  };
+
+  const handleDeleteTimesheetRecord = (timesheetId: string) => {
+    setTimesheets((prev) => prev.filter((ts) => ts.id !== timesheetId));
   };
 
   const handleUpdateTimesheetStatus = (
@@ -541,6 +562,16 @@ export default function App() {
   const handleUploadCertificate = (certData: Omit<CertificateModel, 'id'>) => {
     const newCert: CertificateModel = { ...certData, id: `cert_${Date.now()}` };
     setCertificates((prev) => [newCert, ...prev]);
+  };
+
+  const handleUpdateCertificate = (certId: string, data: Partial<CertificateModel>) => {
+    setCertificates((prev) =>
+      prev.map((c) => (c.id === certId ? { ...c, ...data } : c))
+    );
+  };
+
+  const handleDeleteCertificate = (certId: string) => {
+    setCertificates((prev) => prev.filter((c) => c.id !== certId));
   };
 
   // Leaderboard Top 1
@@ -888,6 +919,18 @@ export default function App() {
               </button>
 
               <button
+                onClick={() => setTeacherSubFeature('certificates')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                  teacherSubFeature === 'certificates'
+                    ? 'bg-[#1E40AF] text-white shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Kho Chứng Chỉ</span>
+              </button>
+
+              <button
                 onClick={() => setTeacherSubFeature('classes')}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
                   teacherSubFeature === 'classes'
@@ -967,6 +1010,18 @@ export default function App() {
                 currentRole="teacher"
                 currentUserId={currentUser?.id || 'usr_teacher_1'}
                 onAddEvaluation={handleAddEvaluation}
+              />
+            )}
+
+            {teacherSubFeature === 'certificates' && (
+              <CertificateVault
+                certificates={certificates}
+                users={users}
+                currentRole="teacher"
+                currentUserId={currentUser?.id || 'usr_teacher_1'}
+                onUploadCertificate={handleUploadCertificate}
+                onUpdateCertificate={handleUpdateCertificate}
+                onDeleteCertificate={handleDeleteCertificate}
               />
             )}
 
@@ -1163,7 +1218,11 @@ export default function App() {
                 currentRole="admin"
                 currentUserId={currentUserId}
                 onAddSession={handleAddSession}
+                onUpdateSession={handleUpdateSession}
+                onDeleteSession={handleDeleteSession}
                 onAddTimesheetRecord={handleAddTimesheetRecord}
+                onUpdateTimesheetRecord={handleUpdateTimesheetRecord}
+                onDeleteTimesheetRecord={handleDeleteTimesheetRecord}
                 onUpdateTimesheetStatus={handleUpdateTimesheetStatus}
               />
             )}
@@ -1261,6 +1320,8 @@ export default function App() {
                 currentRole="admin"
                 currentUserId={currentUserId}
                 onUploadCertificate={handleUploadCertificate}
+                onUpdateCertificate={handleUpdateCertificate}
+                onDeleteCertificate={handleDeleteCertificate}
               />
             )}
 

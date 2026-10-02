@@ -24,6 +24,10 @@ import {
   Check,
   X,
   Search,
+  Edit2,
+  Trash2,
+  AlertTriangle,
+  UserCheck,
 } from 'lucide-react';
 
 interface ScheduleManagerProps {
@@ -35,7 +39,11 @@ interface ScheduleManagerProps {
   currentUserId?: string;
   childStudentId?: string;
   onAddSession?: (session: Omit<ScheduleSessionModel, 'id'>) => void;
+  onUpdateSession?: (sessionId: string, data: Partial<ScheduleSessionModel>) => void;
+  onDeleteSession?: (sessionId: string) => void;
   onAddTimesheetRecord?: (record: Omit<TeacherTimesheetModel, 'id'>) => void;
+  onUpdateTimesheetRecord?: (timesheetId: string, data: Partial<TeacherTimesheetModel>) => void;
+  onDeleteTimesheetRecord?: (timesheetId: string) => void;
   onUpdateTimesheetStatus?: (timesheetId: string, status: TeacherTimesheetModel['status'], confirmed?: boolean) => void;
 }
 
@@ -48,7 +56,11 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
   currentUserId,
   childStudentId,
   onAddSession,
+  onUpdateSession,
+  onDeleteSession,
   onAddTimesheetRecord,
+  onUpdateTimesheetRecord,
+  onDeleteTimesheetRecord,
   onUpdateTimesheetStatus,
 }) => {
   const isParent = currentRole === 'parent';
@@ -63,11 +75,30 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
   const [selectedTeacherFilter, setSelectedTeacherFilter] = useState<string>('all');
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>('all');
 
-  // Timesheet Modal for Admin
+  // Schedule Session Modal (Add / Edit) for Admin
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [editingSession, setEditingSession] = useState<ScheduleSessionModel | null>(null);
+  const [sessionFormData, setSessionFormData] = useState({
+    classId: classes[0]?.id || '',
+    teacherId: users.find((u) => u.role === 'teacher')?.id || '',
+    taName: '',
+    dayOfWeek: 1,
+    dayOfWeekText: 'Thứ Hai',
+    timeSlot: '18:00 - 19:30',
+    room: 'Phòng Lab A201',
+    sessionTopic: '',
+    durationHours: 1.5,
+    isExtraOrMakeUp: false,
+    changeNote: '',
+  });
+
+  // Timesheet Modal (Add / Edit) for Admin
   const [showTimesheetModal, setShowTimesheetModal] = useState(false);
+  const [editingTimesheet, setEditingTimesheet] = useState<TeacherTimesheetModel | null>(null);
   const [timesheetFormData, setTimesheetFormData] = useState({
     teacherId: users.find((u) => u.role === 'teacher')?.id || '',
     classId: classes[0]?.id || '',
+    taName: '',
     date: new Date().toISOString().substring(0, 10),
     timeSlot: '18:00 - 19:30',
     room: 'Phòng Lab A201',
@@ -83,13 +114,13 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
 
   // Days of week mapping
   const daysOfWeek = [
-    { value: '1', label: 'Thứ Hai' },
-    { value: '2', label: 'Thứ Ba' },
-    { value: '3', label: 'Thứ Tư' },
-    { value: '4', label: 'Thứ Năm' },
-    { value: '5', label: 'Thứ Sáu' },
-    { value: '6', label: 'Thứ Bảy' },
-    { value: '0', label: 'Chủ Nhật' },
+    { value: 1, label: 'Thứ Hai' },
+    { value: 2, label: 'Thứ Ba' },
+    { value: 3, label: 'Thứ Tư' },
+    { value: 4, label: 'Thứ Năm' },
+    { value: 5, label: 'Thứ Sáu' },
+    { value: 6, label: 'Thứ Bảy' },
+    { value: 0, label: 'Chủ Nhật' },
   ];
 
   // 1. FILTER FOR PARENT: Only sessions of classes their child attends
@@ -126,13 +157,111 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
     };
   });
 
-  const handleCreateTimesheet = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!onAddTimesheetRecord) return;
-    onAddTimesheetRecord({
-      ...timesheetFormData,
-      confirmedByAdmin: true,
+  // Handlers for Session (Schedule)
+  const handleOpenAddSession = () => {
+    setEditingSession(null);
+    setSessionFormData({
+      classId: classes[0]?.id || '',
+      teacherId: teachers[0]?.id || '',
+      taName: '',
+      dayOfWeek: 1,
+      dayOfWeekText: 'Thứ Hai',
+      timeSlot: '18:00 - 19:30',
+      room: 'Phòng Lab A201',
+      sessionTopic: '',
+      durationHours: 1.5,
+      isExtraOrMakeUp: false,
+      changeNote: '',
     });
+    setShowSessionModal(true);
+  };
+
+  const handleOpenEditSession = (session: ScheduleSessionModel) => {
+    setEditingSession(session);
+    setSessionFormData({
+      classId: session.classId,
+      teacherId: session.teacherId,
+      taName: session.taName || '',
+      dayOfWeek: session.dayOfWeek,
+      dayOfWeekText: session.dayOfWeekText,
+      timeSlot: session.timeSlot,
+      room: session.room,
+      sessionTopic: session.sessionTopic || '',
+      durationHours: session.durationHours || 1.5,
+      isExtraOrMakeUp: !!session.isExtraOrMakeUp,
+      changeNote: session.changeNote || '',
+    });
+    setShowSessionModal(true);
+  };
+
+  const handleSubmitSession = (e: React.FormEvent) => {
+    e.preventDefault();
+    const dayLabel = daysOfWeek.find((d) => d.value === Number(sessionFormData.dayOfWeek))?.label || 'Thứ Hai';
+
+    if (editingSession && onUpdateSession) {
+      onUpdateSession(editingSession.id, {
+        ...sessionFormData,
+        dayOfWeekText: dayLabel,
+      });
+    } else if (onAddSession) {
+      onAddSession({
+        ...sessionFormData,
+        dayOfWeekText: dayLabel,
+        status: 'scheduled',
+      });
+    }
+
+    setShowSessionModal(false);
+  };
+
+  // Handlers for Timesheet
+  const handleOpenAddTimesheet = () => {
+    setEditingTimesheet(null);
+    setTimesheetFormData({
+      teacherId: teachers[0]?.id || '',
+      classId: classes[0]?.id || '',
+      taName: '',
+      date: new Date().toISOString().substring(0, 10),
+      timeSlot: '18:00 - 19:30',
+      room: 'Phòng Lab A201',
+      hours: 1.5,
+      status: 'completed',
+      note: 'Đã hoàn thành buổi dạy',
+    });
+    setShowTimesheetModal(true);
+  };
+
+  const handleOpenEditTimesheet = (ts: TeacherTimesheetModel) => {
+    setEditingTimesheet(ts);
+    setTimesheetFormData({
+      teacherId: ts.teacherId,
+      classId: ts.classId,
+      taName: ts.taName || '',
+      date: ts.date,
+      timeSlot: ts.timeSlot,
+      room: ts.room,
+      hours: ts.hours,
+      status: ts.status,
+      note: ts.note || '',
+    });
+    setShowTimesheetModal(true);
+  };
+
+  const handleSubmitTimesheet = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (editingTimesheet && onUpdateTimesheetRecord) {
+      onUpdateTimesheetRecord(editingTimesheet.id, {
+        ...timesheetFormData,
+        confirmedByAdmin: true,
+      });
+    } else if (onAddTimesheetRecord) {
+      onAddTimesheetRecord({
+        ...timesheetFormData,
+        confirmedByAdmin: true,
+      });
+    }
+
     setShowTimesheetModal(false);
   };
 
@@ -195,15 +324,30 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                     </div>
 
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-black text-slate-900 text-sm">{s.dayOfWeekText}</span>
                         <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1">
                           <Clock className="w-3 h-3" /> {s.timeSlot}
                         </span>
+
+                        {/* Extra or Make-up session badge */}
+                        {s.isExtraOrMakeUp && (
+                          <span className="text-[11px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3 text-amber-600" />
+                            <span>Lịch Học Đột Xuất / Học Bù</span>
+                          </span>
+                        )}
                       </div>
+
                       <p className="text-xs text-slate-600 mt-1 font-medium">
                         Nội dung dự kiến: <strong className="text-slate-800">"{s.sessionTopic || 'Luyện phản xạ giao tiếp & từ vựng theo chủ đề'}"</strong>
                       </p>
+
+                      {s.changeNote && (
+                        <p className="text-[11px] text-amber-800 font-semibold mt-0.5 bg-amber-50 p-1.5 rounded-lg border border-amber-200">
+                          ⚠️ Ghi chú trung tâm: {s.changeNote}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -213,14 +357,23 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                       <span>{s.room}</span>
                     </div>
 
+                    {/* Teacher */}
                     <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl text-emerald-800 font-bold">
                       <img
                         src={teacher?.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100'}
                         alt={teacher?.name}
                         className="w-5 h-5 rounded-full object-cover"
                       />
-                      <span>{teacher?.name || 'Giáo viên phụ trách'}</span>
+                      <span>GV: {teacher?.name || 'Giáo viên phụ trách'}</span>
                     </div>
+
+                    {/* TA (Trợ giảng) badge if assigned */}
+                    {s.taName && (
+                      <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl text-purple-800 font-extrabold">
+                        <UserCheck className="w-3.5 h-3.5 text-purple-600" />
+                        <span>TA: {s.taName}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -258,7 +411,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                 Lịch Dạy Hàng Tuần ({myClasses.length} Lớp Phụ Trách)
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                Theo dõi ca dạy, phòng học và số giờ giảng dạy được hệ thống tự động ghi nhận chấm công.
+                Theo dõi ca dạy, phòng học, trợ giảng (TA) hỗ trợ và số giờ giảng dạy được hệ thống tự động ghi nhận chấm công.
               </p>
             </div>
 
@@ -304,23 +457,46 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                       </div>
 
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <strong className="text-slate-900 text-sm font-black">{cls?.className}</strong>
                           <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {s.timeSlot}
                           </span>
+
+                          {s.isExtraOrMakeUp && (
+                            <span className="text-[11px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md flex items-center gap-1">
+                              <AlertTriangle className="w-3 h-3 text-amber-600" />
+                              <span>Ca Học Đột Xuất / Bù</span>
+                            </span>
+                          )}
                         </div>
+
                         <p className="text-xs text-slate-600 mt-1">
                           {s.dayOfWeekText} • Giáo án: <strong>"{s.sessionTopic || 'Giảng dạy chuẩn khung Cambridge/IELTS'}"</strong>
                         </p>
+
+                        {s.changeNote && (
+                          <p className="text-[11px] text-amber-800 font-semibold mt-0.5">
+                            ⚠️ Ghi chú thay đổi: {s.changeNote}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs">
+                    <div className="flex flex-wrap items-center gap-3 text-xs">
                       <div className="flex items-center gap-1.5 text-slate-700 bg-slate-100 px-3 py-1.5 rounded-xl font-semibold">
                         <MapPin className="w-3.5 h-3.5 text-slate-400" />
                         <span>{s.room}</span>
                       </div>
+
+                      {/* TA (Trợ giảng) */}
+                      {s.taName && (
+                        <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-xl text-purple-800 font-extrabold">
+                          <UserCheck className="w-3.5 h-3.5 text-purple-600" />
+                          <span>Trợ giảng (TA): {s.taName}</span>
+                        </div>
+                      )}
+
                       <span className="px-3 py-1.5 bg-emerald-100 text-emerald-800 font-extrabold rounded-xl">
                         ✓ {s.durationHours || 1.5} Giờ dạy
                       </span>
@@ -349,10 +525,10 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
               <span>Quản Lý Lịch Học & Chấm Công Giáo Viên</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              Lịch Học Trung Tâm & Chấm Công
+              Lịch Học Trung Tâm & Chấm Công Giáo Viên
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              Admin theo dõi ngày nào có lớp học nào, phòng học và giáo viên phụ trách để chấm công, tính giờ dạy chính xác.
+              Admin có quyền thêm, sửa, xóa lịch học cố định hoặc lịch học đột xuất/học bù, phân công Trợ giảng (TA), và quản lý chấm công giáo viên.
             </p>
           </div>
 
@@ -403,11 +579,11 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
       </div>
 
       {/* =========================================================================
-          ADMIN TAB 1: THỜI KHÓA BIỂU CÁC NGÀY TRONG TUẦN
+          ADMIN TAB 1: THỜI KHÓA BIỂU CÁC NGÀY TRONG TUẦN (CÓ MỤC TA VÀ ĐIỀU CHỈNH)
          ========================================================================= */}
       {adminViewMode === 'schedule' && (
         <div className="space-y-4">
-          {/* Filter Bar */}
+          {/* Filter Bar and Action */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2.5">
               {/* Day filter */}
@@ -419,7 +595,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                 >
                   <option value="all">Tất cả các ngày trong tuần</option>
                   {daysOfWeek.map((d) => (
-                    <option key={d.value} value={d.value}>
+                    <option key={d.value} value={d.value.toString()}>
                       {d.label}
                     </option>
                   ))}
@@ -460,13 +636,11 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
             </div>
 
             <button
-              onClick={() => {
-                setShowTimesheetModal(true);
-              }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
+              onClick={handleOpenAddSession}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E40AF] hover:bg-blue-900 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
             >
               <Plus className="w-4 h-4" />
-              <span>Ghi Nhận Buổi Dạy Chấm Công</span>
+              <span>Thêm Buổi Học / Lịch Đột Xuất</span>
             </button>
           </div>
 
@@ -479,9 +653,10 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                     <th className="py-4 px-4 sm:px-6">NGÀY HỌC</th>
                     <th className="py-4 px-4">KHUNG GIỜ</th>
                     <th className="py-4 px-4 sm:px-6">LỚP HỌC</th>
-                    <th className="py-4 px-4">GIÁO VIÊN ĐỨNG LỚP</th>
+                    <th className="py-4 px-4">GIÁO VIÊN CHÍNH</th>
+                    <th className="py-4 px-4">TRỢ GIẢNG (TA)</th>
                     <th className="py-4 px-4">PHÒNG HỌC</th>
-                    <th className="py-4 px-4 text-center">CHẤM CÔNG NHANH</th>
+                    <th className="py-4 px-4 text-center">THAO TÁC</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
@@ -492,9 +667,16 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                     return (
                       <tr key={s.id} className="hover:bg-slate-50/70 transition-colors">
                         <td className="py-4 px-4 sm:px-6 font-bold text-slate-900 whitespace-nowrap">
-                          <span className="inline-block px-2.5 py-1 rounded-lg bg-blue-50 text-blue-900 border border-blue-200 font-black text-xs">
-                            {s.dayOfWeekText}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-block px-2.5 py-1 rounded-lg bg-blue-50 text-blue-900 border border-blue-200 font-black text-xs">
+                              {s.dayOfWeekText}
+                            </span>
+                            {s.isExtraOrMakeUp && (
+                              <span className="text-[10px] font-black text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded">
+                                Đột xuất/Bù
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         <td className="py-4 px-4 font-mono font-bold text-slate-700 whitespace-nowrap">
@@ -526,6 +708,18 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                           )}
                         </td>
 
+                        {/* MỤC TRỢ GIẢNG (TA) */}
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          {s.taName ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 font-bold text-xs">
+                              <UserCheck className="w-3 h-3 text-purple-600" />
+                              {s.taName}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 italic text-[11px]">Chưa có TA</span>
+                          )}
+                        </td>
+
                         <td className="py-4 px-4 text-slate-600 whitespace-nowrap">
                           <div className="flex items-center gap-1 font-semibold">
                             <MapPin className="w-3.5 h-3.5 text-slate-400" />
@@ -534,28 +728,56 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                         </td>
 
                         <td className="py-4 px-4 text-center whitespace-nowrap">
-                          <button
-                            onClick={() => {
-                              if (onAddTimesheetRecord && teacher && cls) {
-                                onAddTimesheetRecord({
-                                  teacherId: teacher.id,
-                                  classId: cls.id,
-                                  date: new Date().toISOString().substring(0, 10),
-                                  timeSlot: s.timeSlot,
-                                  room: s.room,
-                                  hours: s.durationHours || 1.5,
-                                  status: 'completed',
-                                  note: `Đã dạy buổi ${s.dayOfWeekText}`,
-                                  confirmedByAdmin: true,
-                                });
-                                alert(`Đã ghi nhận chấm công cho ${teacher.name} (${s.durationHours || 1.5} giờ)!`);
-                              }
-                            }}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-xs transition-colors"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                            <span>Xác Nhận Đã Dạy</span>
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            {/* Fast record shift */}
+                            <button
+                              onClick={() => {
+                                if (onAddTimesheetRecord && teacher && cls) {
+                                  onAddTimesheetRecord({
+                                    teacherId: teacher.id,
+                                    classId: cls.id,
+                                    taName: s.taName,
+                                    date: new Date().toISOString().substring(0, 10),
+                                    timeSlot: s.timeSlot,
+                                    room: s.room,
+                                    hours: s.durationHours || 1.5,
+                                    status: 'completed',
+                                    note: `Đã dạy ${s.dayOfWeekText}`,
+                                    confirmedByAdmin: true,
+                                  });
+                                  alert(`Đã chấm công cho ${teacher.name} (${s.durationHours || 1.5} giờ)!`);
+                                }
+                              }}
+                              className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors"
+                              title="Xác nhận đã dạy chấm công"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+
+                            {/* Edit session */}
+                            <button
+                              onClick={() => handleOpenEditSession(s)}
+                              className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors"
+                              title="Điều chỉnh lịch học / Trợ giảng TA"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+
+                            {/* Delete session */}
+                            {onDeleteSession && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Bạn có chắc muốn xóa buổi học ${s.dayOfWeekText} của lớp ${cls?.className}?`)) {
+                                    onDeleteSession(s.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors"
+                                title="Xóa buổi học này"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -610,15 +832,15 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
             <div className="p-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-sm">
-                  Nhật Ký Chấm Công Giảng Dạy Của Giáo Viên
+                  Nhật Ký Chấm Công Giảng Dạy Của Giáo Viên & Trợ Giảng (TA)
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Dữ liệu dùng để tính lương, đối soát giờ dạy hàng tháng.
+                  Dữ liệu dùng để tính lương, đối soát giờ dạy hàng tháng. Admin có thể thêm, sửa, xóa bất kỳ dòng nào.
                 </p>
               </div>
 
               <button
-                onClick={() => setShowTimesheetModal(true)}
+                onClick={handleOpenAddTimesheet}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1E40AF] hover:bg-blue-900 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -632,10 +854,12 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                   <tr>
                     <th className="py-4 px-4 sm:px-6">NGÀY DẠY</th>
                     <th className="py-4 px-4 sm:px-6">GIÁO VIÊN</th>
+                    <th className="py-4 px-4">TRỢ GIẢNG (TA)</th>
                     <th className="py-4 px-4">LỚP HỌC</th>
                     <th className="py-4 px-4">KHUNG GIỜ / SỐ GIỜ</th>
-                    <th className="py-4 px-4">GHI CHÚ GIÁO ÁN</th>
+                    <th className="py-4 px-4">GHI CHÚ</th>
                     <th className="py-4 px-4 text-center">TRẠNG THÁI</th>
+                    <th className="py-4 px-4 text-center">THAO TÁC</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
@@ -661,6 +885,16 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                           </div>
                         </td>
 
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          {ts.taName ? (
+                            <span className="font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200 text-xs">
+                              {ts.taName}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 italic text-[11px]">-</span>
+                          )}
+                        </td>
+
                         <td className="py-4 px-4 font-semibold text-slate-800 whitespace-nowrap">
                           {cls?.className || 'Lớp học'}
                         </td>
@@ -671,7 +905,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                         </td>
 
                         <td className="py-4 px-4 text-slate-600 text-xs max-w-xs">
-                          {ts.note || 'Hoàn thành buổi dạy theo tiến độ'}
+                          {ts.note || 'Hoàn thành buổi dạy'}
                         </td>
 
                         <td className="py-4 px-4 text-center whitespace-nowrap">
@@ -687,12 +921,38 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                             {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
                             <span>
                               {isCompleted
-                                ? 'Đã Chấm Công (Hợp lệ)'
+                                ? 'Đã Chấm Công'
                                 : ts.status === 'absent'
                                 ? 'Nghỉ phép / Vắng'
-                                : 'Chờ xác nhận'}
+                                : 'Chờ duyệt'}
                             </span>
                           </span>
+                        </td>
+
+                        <td className="py-4 px-4 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => handleOpenEditTimesheet(ts)}
+                              className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors"
+                              title="Điều chỉnh dòng chấm công"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            {onDeleteTimesheetRecord && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Bạn có chắc muốn xóa ca chấm công ngày ${ts.date} của ${teacher?.name}?`)) {
+                                    onDeleteTimesheetRecord(ts.id);
+                                  }
+                                }}
+                                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors"
+                                title="Xóa ca chấm công"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -705,14 +965,196 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
       )}
 
       {/* =========================================================================
-          MODAL: THÊM CA DẠY CHẤM CÔNG MỚI (DÀNH CHO ADMIN)
+          MODAL: THÊM / ĐIỀU CHỈNH LỊCH HỌC & TRỢ GIẢNG TA (ADMIN)
+         ========================================================================= */}
+      {showSessionModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="font-black text-slate-900 text-base">
+                {editingSession ? 'Điều Chỉnh Lịch Học & Trợ Giảng (TA)' : 'Thêm Buổi Học / Lịch Học Đột Xuất'}
+              </h3>
+              <button
+                onClick={() => setShowSessionModal(false)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitSession} className="space-y-3.5 text-xs sm:text-sm">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Lớp Học *</label>
+                <select
+                  required
+                  value={sessionFormData.classId}
+                  onChange={(e) => setSessionFormData({ ...sessionFormData, classId: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 font-bold"
+                >
+                  {classes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.className} ({c.level})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Giáo Viên Chính *</label>
+                  <select
+                    required
+                    value={sessionFormData.teacherId}
+                    onChange={(e) => setSessionFormData({ ...sessionFormData, teacherId: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600"
+                  >
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* MỤC TRỢ GIẢNG (TA) */}
+                <div>
+                  <label className="font-bold text-purple-900 block mb-1">
+                    Trợ Giảng (TA) Hỗ Trợ Lớp
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="VD: Cô Thảo (TA), Thầy Hoàng (TA)..."
+                    value={sessionFormData.taName}
+                    onChange={(e) => setSessionFormData({ ...sessionFormData, taName: e.target.value })}
+                    className="w-full px-3 py-2 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-600 bg-purple-50/40 font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Thứ Trong Tuần *</label>
+                  <select
+                    value={sessionFormData.dayOfWeek}
+                    onChange={(e) => setSessionFormData({ ...sessionFormData, dayOfWeek: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 font-bold"
+                  >
+                    {daysOfWeek.map((d) => (
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Thời Lượng (Giờ)</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0.5"
+                    max="6"
+                    value={sessionFormData.durationHours}
+                    onChange={(e) => setSessionFormData({ ...sessionFormData, durationHours: parseFloat(e.target.value) })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Khung Giờ *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="VD: 18:00 - 19:30"
+                    value={sessionFormData.timeSlot}
+                    onChange={(e) => setSessionFormData({ ...sessionFormData, timeSlot: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Phòng Học *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="VD: Phòng Lab A201"
+                    value={sessionFormData.room}
+                    onChange={(e) => setSessionFormData({ ...sessionFormData, room: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Chủ Đề / Giáo Án Dự Kiến</label>
+                <input
+                  type="text"
+                  placeholder="VD: Unit 5: Speaking Practice & Debate..."
+                  value={sessionFormData.sessionTopic}
+                  onChange={(e) => setSessionFormData({ ...sessionFormData, sessionTopic: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+
+              {/* ĐÁNH DẤU THAY ĐỔI ĐỘT XUẤT HOẶC HỌC BÙ */}
+              <div className="bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80 space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer font-bold text-amber-950 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={sessionFormData.isExtraOrMakeUp}
+                    onChange={(e) => setSessionFormData({ ...sessionFormData, isExtraOrMakeUp: e.target.checked })}
+                    className="rounded text-amber-600 focus:ring-amber-500"
+                  />
+                  <span>Đánh dấu: Buổi học thay đổi đột xuất / Ca học bù</span>
+                </label>
+
+                {sessionFormData.isExtraOrMakeUp && (
+                  <div>
+                    <label className="font-semibold text-amber-900 block text-[11px] mb-1">
+                      Lý do thay đổi đột xuất (Phụ huynh và Giáo viên sẽ thấy thông báo này):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="VD: Nghỉ lễ dời sang Thứ 7, hoặc Thầy Robert đổi lịch công tác..."
+                      value={sessionFormData.changeNote}
+                      onChange={(e) => setSessionFormData({ ...sessionFormData, changeNote: e.target.value })}
+                      className="w-full px-3 py-1.5 border border-amber-300 rounded-xl bg-white text-xs focus:ring-2 focus:ring-amber-500"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSessionModal(false)}
+                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-bold"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#1E40AF] text-white rounded-xl font-bold hover:bg-blue-900 shadow-xs"
+                >
+                  {editingSession ? 'Lưu Điều Chỉnh' : 'Tạo Lịch Học'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL: THÊM / SỬA CA CHẤM CÔNG GIÁO VIÊN (ADMIN)
          ========================================================================= */}
       {showTimesheetModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-black text-slate-900 text-base">
-                Ghi Nhận Ca Dạy & Chấm Công
+                {editingTimesheet ? 'Điều Chỉnh Ca Chấm Công' : 'Ghi Nhận Ca Dạy & Chấm Công Mới'}
               </h3>
               <button
                 onClick={() => setShowTimesheetModal(false)}
@@ -722,9 +1164,9 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleCreateTimesheet} className="space-y-3.5 text-xs sm:text-sm">
+            <form onSubmit={handleSubmitTimesheet} className="space-y-3.5 text-xs sm:text-sm">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Chọn Giáo Viên Đứng Lớp *</label>
+                <label className="font-bold text-slate-700 block mb-1">Giáo Viên Đứng Lớp *</label>
                 <select
                   required
                   value={timesheetFormData.teacherId}
@@ -753,6 +1195,20 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              {/* MỤC TRỢ GIẢNG (TA) */}
+              <div>
+                <label className="font-bold text-purple-900 block mb-1">
+                  Trợ Giảng (TA) Cùng Ca
+                </label>
+                <input
+                  type="text"
+                  placeholder="VD: Cô Thảo (TA)..."
+                  value={timesheetFormData.taName}
+                  onChange={(e) => setTimesheetFormData({ ...timesheetFormData, taName: e.target.value })}
+                  className="w-full px-3 py-2 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-600 bg-purple-50/40"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -792,18 +1248,22 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Phòng Học</label>
-                  <input
-                    type="text"
-                    value={timesheetFormData.room}
-                    onChange={(e) => setTimesheetFormData({ ...timesheetFormData, room: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600"
-                  />
+                  <label className="font-bold text-slate-700 block mb-1">Trạng Thái</label>
+                  <select
+                    value={timesheetFormData.status}
+                    onChange={(e) => setTimesheetFormData({ ...timesheetFormData, status: e.target.value as any })}
+                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 font-bold"
+                  >
+                    <option value="completed">Đã dạy hoàn thành (Hợp lệ)</option>
+                    <option value="scheduled">Sắp diễn ra</option>
+                    <option value="absent">Nghỉ phép / Vắng</option>
+                    <option value="substitute">Dạy thay / Bù</option>
+                  </select>
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Ghi Chú Tiến Độ Dạy</label>
+                <label className="font-bold text-slate-700 block mb-1">Ghi Chú Tiến Độ</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: Đã dạy xong Unit 4 Speaking..."
@@ -825,7 +1285,7 @@ export const ScheduleManager: React.FC<ScheduleManagerProps> = ({
                   type="submit"
                   className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-xs"
                 >
-                  Xác Nhận Chấm Công
+                  {editingTimesheet ? 'Lưu Thay Đổi' : 'Xác Nhận Chấm Công'}
                 </button>
               </div>
             </form>

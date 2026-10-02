@@ -13,6 +13,7 @@ export interface UserModel {
   avatar?: string;
   parentOfStudentId?: string; // If role === 'parent'
   accountStatus?: 'active' | 'pending' | 'locked';
+  rewardStars?: number; // Tổng số điểm sao khen thưởng tích lũy của học viên
   createdAt?: string;
 }
 
@@ -27,7 +28,7 @@ export interface ClassModel {
   maxCapacity?: number; // e.g. 15-20 students
 }
 
-export type AttendanceStatus = 'present' | 'absent';
+export type AttendanceStatus = 'present' | 'absent' | 'excused' | 'late';
 
 export interface AttendanceModel {
   id: string;
@@ -79,6 +80,8 @@ export interface EvaluationModel {
   type: EvaluationType;
   date: string;
   teacherId?: string;
+  starDelta?: number; // e.g. +1, +2, +5, -1, -2 (cộng hoặc trừ điểm sao của học sinh)
+  reasonCategory?: string; // Lý do phê bình hoặc khen thưởng
 }
 
 export interface CertificateModel {

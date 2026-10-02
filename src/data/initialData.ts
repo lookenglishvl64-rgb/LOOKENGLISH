@@ -92,6 +92,7 @@ export const INITIAL_USERS: UserModel[] = [
     phone: '0933 111 222',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
     accountStatus: 'active',
+    rewardStars: 48,
   },
   {
     id: 'usr_student_2',
@@ -104,6 +105,7 @@ export const INITIAL_USERS: UserModel[] = [
     phone: '0933 222 333',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
     accountStatus: 'active',
+    rewardStars: 50,
   },
   {
     id: 'usr_student_3',
@@ -116,6 +118,7 @@ export const INITIAL_USERS: UserModel[] = [
     phone: '0933 333 444',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
     accountStatus: 'active',
+    rewardStars: 42,
   },
   {
     id: 'usr_student_4',
@@ -128,6 +131,7 @@ export const INITIAL_USERS: UserModel[] = [
     phone: '0933 444 555',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
     accountStatus: 'active',
+    rewardStars: 39,
   },
   {
     id: 'usr_student_5',
@@ -140,6 +144,7 @@ export const INITIAL_USERS: UserModel[] = [
     phone: '0933 555 666',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80',
     accountStatus: 'active',
+    rewardStars: 35,
   },
   {
     id: 'usr_student_6',

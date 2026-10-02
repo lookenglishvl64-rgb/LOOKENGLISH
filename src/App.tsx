@@ -64,6 +64,7 @@ import {
   Calendar,
   Lock,
   Smile,
+  Star,
 } from 'lucide-react';
 
 export default function App() {
@@ -73,7 +74,7 @@ export default function App() {
   // Active sub-features
   const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'schedule' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'checkin' | 'cms' | 'ai'>('classes');
   const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'schedule' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'classes' | 'checkin' | 'ai'>('attendance');
-  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'certificates' | 'leaderboard' | 'checkin' | 'ai'>('checkin');
+  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'checkin' | 'ai'>('checkin');
 
   // Default state: 'guest' (Chưa đăng nhập - chỉ xem được bản tin)
   const [currentRole, setCurrentRole] = useState<UserRole>('guest');
@@ -566,10 +567,32 @@ export default function App() {
     );
   };
 
-  // Evaluation
+  // Evaluation & Daily Star Point Adjustment
+  const handleUpdateUserStars = (studentId: string, delta: number) => {
+    setUsers((prev) =>
+      prev.map((u) => {
+        if (u.id === studentId) {
+          const currentStars = u.rewardStars ?? 40;
+          const newStars = Math.max(0, currentStars + delta);
+          return { ...u, rewardStars: newStars };
+        }
+        return u;
+      })
+    );
+  };
+
   const handleAddEvaluation = (evalData: Omit<EvaluationModel, 'id'>) => {
     const newEval: EvaluationModel = { ...evalData, id: `evl_${Date.now()}` };
     setEvaluations((prev) => [newEval, ...prev]);
+
+    // Automatically update student's star points if starDelta is provided
+    if (evalData.starDelta) {
+      handleUpdateUserStars(evalData.studentId, evalData.starDelta);
+    }
+  };
+
+  const handleDeleteEvaluation = (evalId: string) => {
+    setEvaluations((prev) => prev.filter((e) => e.id !== evalId));
   };
 
   // Certificate
@@ -806,14 +829,26 @@ export default function App() {
 
               <button
                 onClick={() => setParentSubFeature('attendance')}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
                   parentSubFeature === 'attendance'
                     ? 'bg-[#1E40AF] text-white shadow-xs'
                     : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <CalendarCheck className="w-3.5 h-3.5" />
-                <span>Sổ Điểm Danh & Ghi Chú</span>
+                <span>Sổ Điểm Danh & Sĩ Số</span>
+              </button>
+
+              <button
+                onClick={() => setParentSubFeature('evaluations')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
+                  parentSubFeature === 'evaluations'
+                    ? 'bg-amber-500 text-slate-950 shadow-xs'
+                    : 'bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100'
+                }`}
+              >
+                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                <span>Khen Thưởng & Sao ({linkedChild?.rewardStars ?? 50} ⭐)</span>
               </button>
 
               <button
@@ -922,6 +957,20 @@ export default function App() {
                 onAddAssignment={handleAddAssignment}
                 onSubmitHomework={handleSubmitHomework}
                 onGradeSubmission={handleGradeSubmission}
+              />
+            )}
+
+            {parentSubFeature === 'evaluations' && (
+              <EvaluationManager
+                evaluations={evaluations}
+                users={users}
+                classes={classes}
+                currentRole="parent"
+                currentUserId={currentUser?.id || 'usr_parent_1'}
+                childStudentId={currentUser?.parentOfStudentId || 'usr_student_2'}
+                onAddEvaluation={handleAddEvaluation}
+                onDeleteEvaluation={handleDeleteEvaluation}
+                onUpdateUserStars={handleUpdateUserStars}
               />
             )}
 
@@ -1124,6 +1173,8 @@ export default function App() {
                 currentRole="teacher"
                 currentUserId={currentUser?.id || 'usr_teacher_1'}
                 onAddEvaluation={handleAddEvaluation}
+                onDeleteEvaluation={handleDeleteEvaluation}
+                onUpdateUserStars={handleUpdateUserStars}
               />
             )}
 
@@ -1452,6 +1503,8 @@ export default function App() {
                 currentRole="admin"
                 currentUserId={currentUserId}
                 onAddEvaluation={handleAddEvaluation}
+                onDeleteEvaluation={handleDeleteEvaluation}
+                onUpdateUserStars={handleUpdateUserStars}
               />
             )}
 

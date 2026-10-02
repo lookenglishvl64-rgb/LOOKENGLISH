@@ -95,9 +95,15 @@ export interface LeaderboardModel {
   id: string;
   classId: string;
   topStudentId: string;
-  month: string; // e.g. "10/2026", "09/2026"
+  month: string; // e.g. "Tháng 10/2026", "Tháng 09/2026"
   score: number;
   highlightNote?: string;
+  title?: string; // e.g. "Thủ Khoa Mock Test IELTS", "Học Sinh Xuất Sắc Nhất Khối"
+  imageUrl?: string; // Ảnh vinh danh, nhận giải thưởng hoặc cúp
+  videoUrl?: string; // Video vinh danh, phỏng vấn hoặc bài phát biểu tiếng Anh
+  mediaType?: 'image' | 'video' | 'both';
+  badgeText?: string; // e.g. "TOP 1 OVERALL", "THỦ KHOA SPEAKING", "GOLDEN EXPLORER"
+  starsCount?: number;
 }
 
 export interface HomeBannerModel {
@@ -158,4 +164,35 @@ export interface TeacherTimesheetModel {
   status: 'completed' | 'absent' | 'substitute' | 'scheduled';
   note?: string;
   confirmedByAdmin?: boolean;
+}
+
+export type CheckInMoodType =
+  | 'excited'
+  | 'happy'
+  | 'confident'
+  | 'neutral'
+  | 'tired'
+  | 'stressed';
+
+export interface StudentCheckInModel {
+  id: string;
+  studentId: string;
+  classId: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  mood: CheckInMoodType;
+  moodEmoji: string;
+  moodLabel: string;
+  energyLevel: number; // 1 - 5
+  reflection: string; // Cảm nghĩ của học viên hôm nay
+  topicsLearned?: string; // Những gì con học được hôm nay
+  needHelp: boolean;
+  helpTopic?: string;
+  parentNote?: string; // Lời nhắn động viên từ phụ huynh
+  teacherFeedback?: {
+    teacherId: string;
+    teacherName: string;
+    comment: string;
+    createdAt: string;
+  };
 }

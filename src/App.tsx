@@ -14,6 +14,7 @@ import {
   HomeMediaItemModel,
   ScheduleSessionModel,
   TeacherTimesheetModel,
+  StudentCheckInModel,
 } from './types';
 import {
   INITIAL_USERS,
@@ -29,6 +30,7 @@ import {
   INITIAL_MEDIA_ITEMS,
   INITIAL_SCHEDULE_SESSIONS,
   INITIAL_TEACHER_TIMESHEETS,
+  INITIAL_STUDENT_CHECKINS,
 } from './data/initialData';
 import { Header } from './components/Header';
 import { RoleTabsBar } from './components/RoleTabsBar';
@@ -42,6 +44,7 @@ import { HomeworkManager } from './components/HomeworkManager';
 import { EvaluationManager } from './components/EvaluationManager';
 import { CertificateVault } from './components/CertificateVault';
 import { LeaderboardView } from './components/LeaderboardView';
+import { QuickCheckInManager } from './components/QuickCheckInManager';
 import { AccountManager } from './components/AccountManager';
 import { AiAssistantTab } from './components/AiAssistantTab';
 import { AuthModal } from './components/AuthModal';
@@ -60,6 +63,7 @@ import {
   Newspaper,
   Calendar,
   Lock,
+  Smile,
 } from 'lucide-react';
 
 export default function App() {
@@ -67,9 +71,9 @@ export default function App() {
   const [mainRoleTab, setMainRoleTab] = useState<'parent' | 'teacher' | 'admin' | 'news'>('news');
 
   // Active sub-features
-  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'schedule' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'cms' | 'ai'>('classes');
-  const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'schedule' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'classes' | 'ai'>('attendance');
-  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'certificates' | 'leaderboard' | 'ai'>('grades');
+  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'schedule' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'checkin' | 'cms' | 'ai'>('classes');
+  const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'schedule' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'classes' | 'checkin' | 'ai'>('attendance');
+  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'certificates' | 'leaderboard' | 'checkin' | 'ai'>('checkin');
 
   // Default state: 'guest' (Chưa đăng nhập - chỉ xem được bản tin)
   const [currentRole, setCurrentRole] = useState<UserRole>('guest');
@@ -161,6 +165,12 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_TEACHER_TIMESHEETS;
   });
 
+  // Student Daily Check-ins (Moods & Reflections)
+  const [checkIns, setCheckIns] = useState<StudentCheckInModel[]>(() => {
+    const saved = localStorage.getItem('look_english_checkins');
+    return saved ? JSON.parse(saved) : INITIAL_STUDENT_CHECKINS;
+  });
+
   // Save changes to localStorage
   useEffect(() => {
     localStorage.setItem('look_english_users', JSON.stringify(users));
@@ -209,6 +219,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('look_english_timesheets', JSON.stringify(timesheets));
   }, [timesheets]);
+
+  useEffect(() => {
+    localStorage.setItem('look_english_checkins', JSON.stringify(checkIns));
+  }, [checkIns]);
 
   const currentUser = currentUserId ? users.find((u) => u.id === currentUserId) : undefined;
   const isLoggedIn = currentRole !== 'guest' && !!currentUser;
@@ -580,6 +594,14 @@ export default function App() {
     setLeaderboard((prev) => [newLb, ...prev]);
   };
 
+  const handleUpdateTop1Record = (id: string, data: Partial<LeaderboardModel>) => {
+    setLeaderboard((prev) => prev.map((lb) => (lb.id === id ? { ...lb, ...data } : lb)));
+  };
+
+  const handleDeleteTop1Record = (id: string) => {
+    setLeaderboard((prev) => prev.filter((lb) => lb.id !== id));
+  };
+
   // User Accounts
   const handleAddUser = (userData: Omit<UserModel, 'id'>) => {
     const newUser: UserModel = { ...userData, id: `usr_${Date.now()}` };
@@ -592,6 +614,30 @@ export default function App() {
 
   const handleDeleteUser = (userId: string) => {
     setUsers((prev) => prev.filter((u) => u.id !== userId));
+  };
+
+  // Quick Check-in Handlers
+  const handleAddCheckIn = (data: Omit<StudentCheckInModel, 'id'>) => {
+    const newCheckIn: StudentCheckInModel = {
+      ...data,
+      id: `chk_${Date.now()}`,
+    };
+    setCheckIns((prev) => [newCheckIn, ...prev]);
+  };
+
+  const handleAddTeacherFeedback = (
+    checkInId: string,
+    feedback: { teacherId: string; teacherName: string; comment: string; createdAt: string }
+  ) => {
+    setCheckIns((prev) =>
+      prev.map((c) => (c.id === checkInId ? { ...c, teacherFeedback: feedback } : c))
+    );
+  };
+
+  const handleAddParentNote = (checkInId: string, note: string) => {
+    setCheckIns((prev) =>
+      prev.map((c) => (c.id === checkInId ? { ...c, parentNote: note } : c))
+    );
   };
 
   return (
@@ -646,6 +692,7 @@ export default function App() {
             announcements={announcements}
             leaderboards={leaderboard}
             users={users}
+            classes={classes}
             currentRole={currentRole}
             onLoginClick={() => {
               setAuthModalMode('login');
@@ -661,6 +708,9 @@ export default function App() {
             onAddAnnouncement={handleAddAnnouncement}
             onUpdateAnnouncement={handleUpdateAnnouncement}
             onDeleteAnnouncement={handleDeleteAnnouncement}
+            onAddTop1Record={handleAddTop1Record}
+            onUpdateTop1Record={handleUpdateTop1Record}
+            onDeleteTop1Record={handleDeleteTop1Record}
             onNavigateToLeaderboard={() => {}}
           />
         )}
@@ -692,11 +742,47 @@ export default function App() {
               </div>
             )}
 
+            {/* Quick Check-in Interactive Banner for Mobile & Desktop */}
+            <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border border-emerald-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center text-xl shrink-0 shadow-xs">
+                  🌟
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-emerald-950 text-xs sm:text-sm">
+                    Quick Check-in: Cảm Nghĩ & Tâm Trạng Hôm Nay Của Con
+                  </h4>
+                  <p className="text-[11px] text-emerald-700">
+                    Cùng con ghi lại mức độ hiểu bài, năng lượng và gửi câu hỏi để thầy cô giải đáp ngay!
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setParentSubFeature('checkin')}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-xs transition-all active:scale-95 shrink-0"
+              >
+                <Smile className="w-3.5 h-3.5" />
+                <span>Check-in Cùng Con Ngay</span>
+              </button>
+            </div>
+
             {/* Parent Sub-Navigation */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold scrollbar-none no-scrollbar">
+              <button
+                onClick={() => setParentSubFeature('checkin')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
+                  parentSubFeature === 'checkin'
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
+                    : 'bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                }`}
+              >
+                <Smile className="w-3.5 h-3.5" />
+                <span>Quick Check-in (Tâm Trạng)</span>
+              </button>
+
               <button
                 onClick={() => setParentSubFeature('grades')}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
                   parentSubFeature === 'grades'
                     ? 'bg-[#1E40AF] text-white shadow-xs'
                     : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -780,6 +866,20 @@ export default function App() {
             </div>
 
             {/* Parent Views - STRICTLY FOR THEIR CHILD */}
+            {parentSubFeature === 'checkin' && (
+              <QuickCheckInManager
+                checkIns={checkIns}
+                users={users}
+                classes={classes}
+                currentRole="parent"
+                currentUserId={currentUser?.id || 'usr_parent_1'}
+                childStudentId={currentUser?.parentOfStudentId || 'usr_student_2'}
+                onAddCheckIn={handleAddCheckIn}
+                onAddTeacherFeedback={handleAddTeacherFeedback}
+                onAddParentNote={handleAddParentNote}
+              />
+            )}
+
             {parentSubFeature === 'grades' && (
               <AcademicGradesManager
                 grades={grades}
@@ -842,6 +942,8 @@ export default function App() {
                 users={users}
                 currentRole="parent"
                 onAddTop1Record={handleAddTop1Record}
+                onUpdateTop1Record={handleUpdateTop1Record}
+                onDeleteTop1Record={handleDeleteTop1Record}
               />
             )}
 
@@ -920,7 +1022,7 @@ export default function App() {
 
               <button
                 onClick={() => setTeacherSubFeature('certificates')}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
                   teacherSubFeature === 'certificates'
                     ? 'bg-[#1E40AF] text-white shadow-xs'
                     : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -928,6 +1030,18 @@ export default function App() {
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Kho Chứng Chỉ</span>
+              </button>
+
+              <button
+                onClick={() => setTeacherSubFeature('checkin')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
+                  teacherSubFeature === 'checkin'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                }`}
+              >
+                <Smile className="w-3.5 h-3.5" />
+                <span>Nhật Ký Check-in ({checkIns.length})</span>
               </button>
 
               <button
@@ -1022,6 +1136,18 @@ export default function App() {
                 onUploadCertificate={handleUploadCertificate}
                 onUpdateCertificate={handleUpdateCertificate}
                 onDeleteCertificate={handleDeleteCertificate}
+              />
+            )}
+
+            {teacherSubFeature === 'checkin' && (
+              <QuickCheckInManager
+                checkIns={checkIns}
+                users={users}
+                classes={teacherAssignedClasses}
+                currentRole="teacher"
+                currentUserId={currentUser?.id || 'usr_teacher_1'}
+                onAddCheckIn={handleAddCheckIn}
+                onAddTeacherFeedback={handleAddTeacherFeedback}
               />
             )}
 
@@ -1173,7 +1299,7 @@ export default function App() {
 
               <button
                 onClick={() => setAdminSubFeature('leaderboard')}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
                   adminSubFeature === 'leaderboard'
                     ? 'bg-amber-500 text-slate-950 shadow-xs'
                     : 'bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100'
@@ -1181,6 +1307,18 @@ export default function App() {
               >
                 <Trophy className="w-3.5 h-3.5" />
                 <span>Bảng Vàng Top 1</span>
+              </button>
+
+              <button
+                onClick={() => setAdminSubFeature('checkin')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
+                  adminSubFeature === 'checkin'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                }`}
+              >
+                <Smile className="w-3.5 h-3.5" />
+                <span>Nhật Ký Check-in ({checkIns.length})</span>
               </button>
 
               <button
@@ -1244,6 +1382,7 @@ export default function App() {
                 announcements={announcements}
                 leaderboards={leaderboard}
                 users={users}
+                classes={classes}
                 currentRole="admin"
                 onLoginClick={() => {}}
                 onRegisterClick={() => {}}
@@ -1253,6 +1392,9 @@ export default function App() {
                 onAddAnnouncement={handleAddAnnouncement}
                 onUpdateAnnouncement={handleUpdateAnnouncement}
                 onDeleteAnnouncement={handleDeleteAnnouncement}
+                onAddTop1Record={handleAddTop1Record}
+                onUpdateTop1Record={handleUpdateTop1Record}
+                onDeleteTop1Record={handleDeleteTop1Record}
                 onNavigateToLeaderboard={() => {}}
               />
             )}
@@ -1332,6 +1474,20 @@ export default function App() {
                 users={users}
                 currentRole="admin"
                 onAddTop1Record={handleAddTop1Record}
+                onUpdateTop1Record={handleUpdateTop1Record}
+                onDeleteTop1Record={handleDeleteTop1Record}
+              />
+            )}
+
+            {adminSubFeature === 'checkin' && (
+              <QuickCheckInManager
+                checkIns={checkIns}
+                users={users}
+                classes={classes}
+                currentRole="admin"
+                currentUserId={currentUserId}
+                onAddCheckIn={handleAddCheckIn}
+                onAddTeacherFeedback={handleAddTeacherFeedback}
               />
             )}
 

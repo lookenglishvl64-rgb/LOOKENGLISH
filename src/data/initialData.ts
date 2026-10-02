@@ -768,3 +768,231 @@ export const INITIAL_ANNOUNCEMENTS: import('../types').CenterAnnouncementModel[]
   },
 ];
 
+export const INITIAL_SCHEDULE_SESSIONS: import('../types').ScheduleSessionModel[] = [
+  // Thứ 2, 4, 6
+  {
+    id: 'sch_01',
+    classId: 'cls_ielts_01',
+    teacherId: 'usr_teacher_1',
+    dayOfWeek: 1, // Thứ 2
+    dayOfWeekText: 'Thứ Hai',
+    timeSlot: '18:00 - 19:30',
+    room: 'Phòng Lab A201',
+    status: 'scheduled',
+    sessionTopic: 'IELTS Writing Task 2: Advanced Coherence',
+    durationHours: 1.5,
+  },
+  {
+    id: 'sch_02',
+    classId: 'cls_kids_01',
+    teacherId: 'usr_teacher_2',
+    dayOfWeek: 1, // Thứ 2
+    dayOfWeekText: 'Thứ Hai',
+    timeSlot: '17:30 - 19:00',
+    room: 'Phòng Kids C102',
+    status: 'scheduled',
+    sessionTopic: 'Unit 3: Colors & Animals Storytelling',
+    durationHours: 1.5,
+  },
+  {
+    id: 'sch_03',
+    classId: 'cls_b1_01',
+    teacherId: 'usr_teacher_3',
+    dayOfWeek: 1, // Thứ 2
+    dayOfWeekText: 'Thứ Hai',
+    timeSlot: '19:30 - 21:00',
+    room: 'Phòng A201',
+    status: 'scheduled',
+    sessionTopic: 'PET Reading Part 4 Mastery',
+    durationHours: 1.5,
+  },
+  // Thứ 3, 5, 7
+  {
+    id: 'sch_04',
+    classId: 'cls_a2_01',
+    teacherId: 'usr_teacher_2',
+    dayOfWeek: 2, // Thứ 3
+    dayOfWeekText: 'Thứ Ba',
+    timeSlot: '17:30 - 19:00',
+    room: 'Phòng Kids C102',
+    status: 'scheduled',
+    sessionTopic: 'Flyers Listening: Part 3 Dialogue Analysis',
+    durationHours: 1.5,
+  },
+  {
+    id: 'sch_05',
+    classId: 'cls_ielts_02',
+    teacherId: 'usr_teacher_1',
+    dayOfWeek: 2, // Thứ 3
+    dayOfWeekText: 'Thứ Ba',
+    timeSlot: '18:00 - 19:30',
+    room: 'Phòng Lab A202',
+    status: 'scheduled',
+    sessionTopic: 'Foundation Grammar for Academic IELTS',
+    durationHours: 1.5,
+  },
+  {
+    id: 'sch_06',
+    classId: 'cls_kids_02',
+    teacherId: 'usr_teacher_4',
+    dayOfWeek: 2, // Thứ 3
+    dayOfWeekText: 'Thứ Ba',
+    timeSlot: '17:30 - 19:00',
+    room: 'Phòng Kids C103',
+    status: 'scheduled',
+    sessionTopic: 'Cambridge Movers: Action Verbs in Context',
+    durationHours: 1.5,
+  },
+  // Thứ 4
+  {
+    id: 'sch_07',
+    classId: 'cls_ielts_01',
+    teacherId: 'usr_teacher_1',
+    dayOfWeek: 3, // Thứ 4
+    dayOfWeekText: 'Thứ Tư',
+    timeSlot: '18:00 - 19:30',
+    room: 'Phòng Lab A201',
+    status: 'scheduled',
+    sessionTopic: 'IELTS Speaking Part 2: Cue Card Strategy',
+    durationHours: 1.5,
+  },
+  {
+    id: 'sch_08',
+    classId: 'cls_kids_01',
+    teacherId: 'usr_teacher_2',
+    dayOfWeek: 3, // Thứ 4
+    dayOfWeekText: 'Thứ Tư',
+    timeSlot: '17:30 - 19:00',
+    room: 'Phòng Kids C102',
+    status: 'scheduled',
+    sessionTopic: 'Phonics Fun & Interactive Board Games',
+    durationHours: 1.5,
+  },
+  // Thứ 5
+  {
+    id: 'sch_09',
+    classId: 'cls_a2_01',
+    teacherId: 'usr_teacher_2',
+    dayOfWeek: 4, // Thứ 5
+    dayOfWeekText: 'Thứ Năm',
+    timeSlot: '17:30 - 19:00',
+    room: 'Phòng Kids C102',
+    status: 'scheduled',
+    sessionTopic: 'Flyers Grammar & Sentence Building',
+    durationHours: 1.5,
+  },
+  // Thứ 6
+  {
+    id: 'sch_10',
+    classId: 'cls_ielts_01',
+    teacherId: 'usr_teacher_1',
+    dayOfWeek: 5, // Thứ 6
+    dayOfWeekText: 'Thứ Sáu',
+    timeSlot: '18:00 - 19:30',
+    room: 'Phòng Lab A201',
+    status: 'scheduled',
+    sessionTopic: 'IELTS Mock Test Review & Band Score Advice',
+    durationHours: 1.5,
+  },
+  // Thứ 7 & CN
+  {
+    id: 'sch_11',
+    classId: 'cls_prekids_01',
+    teacherId: 'usr_teacher_2',
+    dayOfWeek: 6, // Thứ 7
+    dayOfWeekText: 'Thứ Bảy',
+    timeSlot: '08:00 - 09:30',
+    room: 'Phòng Kids C101',
+    status: 'scheduled',
+    sessionTopic: 'Pre-Kids English Songs, Arts & Crafts',
+    durationHours: 1.5,
+  },
+  {
+    id: 'sch_12',
+    classId: 'cls_teens_01',
+    teacherId: 'usr_teacher_3',
+    dayOfWeek: 6, // Thứ 7
+    dayOfWeekText: 'Thứ Bảy',
+    timeSlot: '08:30 - 10:30',
+    room: 'Phòng B201',
+    status: 'scheduled',
+    sessionTopic: 'Teen Debate: Social Media Impact on Education',
+    durationHours: 2.0,
+  },
+  {
+    id: 'sch_13',
+    classId: 'cls_prekids_01',
+    teacherId: 'usr_teacher_2',
+    dayOfWeek: 0, // Chủ nhật
+    dayOfWeekText: 'Chủ Nhật',
+    timeSlot: '08:00 - 09:30',
+    room: 'Phòng Kids C101',
+    status: 'scheduled',
+    sessionTopic: 'Body Parts & Movement TPR Game',
+    durationHours: 1.5,
+  },
+  {
+    id: 'sch_14',
+    classId: 'cls_teens_01',
+    teacherId: 'usr_teacher_3',
+    dayOfWeek: 0, // Chủ nhật
+    dayOfWeekText: 'Chủ Nhật',
+    timeSlot: '08:30 - 10:30',
+    room: 'Phòng B201',
+    status: 'scheduled',
+    sessionTopic: 'Presentation Skills & Impromptu Speaking',
+    durationHours: 2.0,
+  },
+];
+
+export const INITIAL_TEACHER_TIMESHEETS: import('../types').TeacherTimesheetModel[] = [
+  {
+    id: 'ts_01',
+    teacherId: 'usr_teacher_1',
+    classId: 'cls_ielts_01',
+    date: '2026-10-02',
+    timeSlot: '18:00 - 19:30',
+    room: 'Phòng Lab A201',
+    hours: 1.5,
+    status: 'completed',
+    note: 'Dạy đúng giờ, hoàn thành giáo án IELTS Writing',
+    confirmedByAdmin: true,
+  },
+  {
+    id: 'ts_02',
+    teacherId: 'usr_teacher_2',
+    classId: 'cls_a2_01',
+    date: '2026-10-01',
+    timeSlot: '17:30 - 19:00',
+    room: 'Phòng Kids C102',
+    hours: 1.5,
+    status: 'completed',
+    note: 'Học sinh luyện Flyers hào hứng',
+    confirmedByAdmin: true,
+  },
+  {
+    id: 'ts_03',
+    teacherId: 'usr_teacher_3',
+    classId: 'cls_b1_01',
+    date: '2026-09-30',
+    timeSlot: '19:30 - 21:00',
+    room: 'Phòng A201',
+    hours: 1.5,
+    status: 'completed',
+    note: 'Lớp PET học đầy đủ',
+    confirmedByAdmin: true,
+  },
+  {
+    id: 'ts_04',
+    teacherId: 'usr_teacher_4',
+    classId: 'cls_kids_02',
+    date: '2026-09-29',
+    timeSlot: '17:30 - 19:00',
+    room: 'Phòng Kids C103',
+    hours: 1.5,
+    status: 'completed',
+    note: 'Buổi học Movers sinh động',
+    confirmedByAdmin: true,
+  },
+];
+

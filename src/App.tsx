@@ -12,6 +12,8 @@ import {
   HomeBannerModel,
   CenterAnnouncementModel,
   HomeMediaItemModel,
+  ScheduleSessionModel,
+  TeacherTimesheetModel,
 } from './types';
 import {
   INITIAL_USERS,
@@ -25,12 +27,15 @@ import {
   INITIAL_HOME_BANNERS,
   INITIAL_ANNOUNCEMENTS,
   INITIAL_MEDIA_ITEMS,
+  INITIAL_SCHEDULE_SESSIONS,
+  INITIAL_TEACHER_TIMESHEETS,
 } from './data/initialData';
 import { Header } from './components/Header';
 import { RoleTabsBar } from './components/RoleTabsBar';
 import { PublicHome } from './components/PublicHome';
 import { ClassesManager } from './components/ClassesManager';
 import { StudentsManager } from './components/StudentsManager';
+import { ScheduleManager } from './components/ScheduleManager';
 import { AttendanceManager } from './components/AttendanceManager';
 import { AcademicGradesManager } from './components/AcademicGradesManager';
 import { HomeworkManager } from './components/HomeworkManager';
@@ -53,6 +58,7 @@ import {
   Users,
   GraduationCap,
   Newspaper,
+  Calendar,
   Lock,
 } from 'lucide-react';
 
@@ -61,9 +67,9 @@ export default function App() {
   const [mainRoleTab, setMainRoleTab] = useState<'parent' | 'teacher' | 'admin' | 'news'>('news');
 
   // Active sub-features
-  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'cms' | 'ai'>('classes');
-  const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'grades' | 'homework' | 'evaluations' | 'classes' | 'ai'>('attendance');
-  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'attendance' | 'homework' | 'certificates' | 'leaderboard' | 'ai'>('grades');
+  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'schedule' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'cms' | 'ai'>('classes');
+  const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'schedule' | 'grades' | 'homework' | 'evaluations' | 'classes' | 'ai'>('attendance');
+  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'certificates' | 'leaderboard' | 'ai'>('grades');
 
   // Default state: 'guest' (Chưa đăng nhập - chỉ xem được bản tin)
   const [currentRole, setCurrentRole] = useState<UserRole>('guest');
@@ -144,6 +150,17 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_MEDIA_ITEMS;
   });
 
+  // Class Schedules & Teacher Timesheets
+  const [sessions, setSessions] = useState<ScheduleSessionModel[]>(() => {
+    const saved = localStorage.getItem('look_english_sessions');
+    return saved ? JSON.parse(saved) : INITIAL_SCHEDULE_SESSIONS;
+  });
+
+  const [timesheets, setTimesheets] = useState<TeacherTimesheetModel[]>(() => {
+    const saved = localStorage.getItem('look_english_timesheets');
+    return saved ? JSON.parse(saved) : INITIAL_TEACHER_TIMESHEETS;
+  });
+
   // Save changes to localStorage
   useEffect(() => {
     localStorage.setItem('look_english_users', JSON.stringify(users));
@@ -184,6 +201,14 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('look_english_media_items', JSON.stringify(mediaItems));
   }, [mediaItems]);
+
+  useEffect(() => {
+    localStorage.setItem('look_english_sessions', JSON.stringify(sessions));
+  }, [sessions]);
+
+  useEffect(() => {
+    localStorage.setItem('look_english_timesheets', JSON.stringify(timesheets));
+  }, [timesheets]);
 
   const currentUser = currentUserId ? users.find((u) => u.id === currentUserId) : undefined;
   const isLoggedIn = currentRole !== 'guest' && !!currentUser;
@@ -239,7 +264,7 @@ export default function App() {
 
     // If NOT logged in: Cannot view anything other than 'news'!
     if (!isLoggedIn) {
-      setAuthModalMode(tab === 'parent' ? 'login' : 'login');
+      setAuthModalMode('login');
       setAuthModalOpen(true);
       return;
     }
@@ -393,6 +418,31 @@ export default function App() {
 
   const handleDeleteAnnouncement = (id: string) => {
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+  };
+
+  // Schedule & Timesheet handlers
+  const handleAddSession = (sessionData: Omit<ScheduleSessionModel, 'id'>) => {
+    const newSession: ScheduleSessionModel = { ...sessionData, id: `sch_${Date.now()}` };
+    setSessions((prev) => [...prev, newSession]);
+  };
+
+  const handleAddTimesheetRecord = (recordData: Omit<TeacherTimesheetModel, 'id'>) => {
+    const newTs: TeacherTimesheetModel = { ...recordData, id: `ts_${Date.now()}` };
+    setTimesheets((prev) => [newTs, ...prev]);
+  };
+
+  const handleUpdateTimesheetStatus = (
+    timesheetId: string,
+    status: TeacherTimesheetModel['status'],
+    confirmed?: boolean
+  ) => {
+    setTimesheets((prev) =>
+      prev.map((ts) =>
+        ts.id === timesheetId
+          ? { ...ts, status, confirmedByAdmin: confirmed ?? ts.confirmedByAdmin }
+          : ts
+      )
+    );
   };
 
   // Attendance Batch
@@ -557,7 +607,7 @@ export default function App() {
           ============================================================
         */}
 
-        {/* TAB 1: BẢN TIN TRUNG TÂM (ADMIN CÓ QUYỀN THÊM, SỬA, XÓA TRỰC TIẾP) */}
+        {/* TAB 1: BẢN TIN TRUNG TÂM */}
         {mainRoleTab === 'news' && (
           <PublicHome
             banners={homeBanners}
@@ -584,7 +634,7 @@ export default function App() {
           />
         )}
 
-        {/* TAB 2: PHỤ HUYNH (CHỈ XEM ĐƯỢC THÔNG TIN CỦA RIÊNG CON MÌNH) */}
+        {/* TAB 2: PHỤ HUYNH (CHỈ XEM ĐƯỢC THÔNG TIN & LỊCH HỌC CỦA RIÊNG CON MÌNH) */}
         {mainRoleTab === 'parent' && isLoggedIn && (
           <div className="space-y-4">
             {/* Child Header Card for Parent */}
@@ -623,6 +673,18 @@ export default function App() {
               >
                 <Award className="w-3.5 h-3.5" />
                 <span>Bảng Điểm Con Em</span>
+              </button>
+
+              <button
+                onClick={() => setParentSubFeature('schedule')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                  parentSubFeature === 'schedule'
+                    ? 'bg-[#1E40AF] text-white shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Lịch Học Của Con</span>
               </button>
 
               <button
@@ -697,6 +759,17 @@ export default function App() {
               />
             )}
 
+            {parentSubFeature === 'schedule' && (
+              <ScheduleManager
+                classes={classes}
+                users={users}
+                sessions={sessions}
+                timesheets={timesheets}
+                currentRole="parent"
+                childStudentId={currentUser?.parentOfStudentId || 'usr_student_2'}
+              />
+            )}
+
             {parentSubFeature === 'attendance' && (
               <AttendanceManager
                 classes={classes}
@@ -750,7 +823,7 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 3: GIÁO VIÊN (CHỈ THAO TÁC CÁC LỚP ĐƯỢC ADMIN PHÂN QUYỀN) */}
+        {/* TAB 3: GIÁO VIÊN (LỊCH GIẢNG DẠY & CHẤM CÔNG CỦA GIÁO VIÊN) */}
         {mainRoleTab === 'teacher' && isLoggedIn && (
           <div className="space-y-4">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold">
@@ -764,6 +837,18 @@ export default function App() {
               >
                 <CalendarCheck className="w-3.5 h-3.5" />
                 <span>Điểm Danh & Ghi Chú</span>
+              </button>
+
+              <button
+                onClick={() => setTeacherSubFeature('schedule')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                  teacherSubFeature === 'schedule'
+                    ? 'bg-[#1E40AF] text-white shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Lịch Giảng Dạy</span>
               </button>
 
               <button
@@ -827,7 +912,7 @@ export default function App() {
               </button>
             </div>
 
-            {/* Teacher Views: STRICTLY PASSED teacherAssignedClasses */}
+            {/* Teacher Views */}
             {teacherSubFeature === 'attendance' && (
               <AttendanceManager
                 classes={teacherAssignedClasses}
@@ -835,6 +920,17 @@ export default function App() {
                 attendance={attendance}
                 currentRole="teacher"
                 onSaveBatchAttendance={handleSaveBatchAttendance}
+              />
+            )}
+
+            {teacherSubFeature === 'schedule' && (
+              <ScheduleManager
+                classes={teacherAssignedClasses}
+                users={users}
+                sessions={sessions}
+                timesheets={timesheets}
+                currentRole="teacher"
+                currentUserId={currentUser?.id || 'usr_teacher_1'}
               />
             )}
 
@@ -896,7 +992,7 @@ export default function App() {
           </div>
         )}
 
-        {/* TAB 4: ADMIN (TOÀN QUYỀN HỆ THỐNG VỚI HƠN 20 LỚP HỌC, CMS VÀ QUẢN LÝ HỌC VIÊN) */}
+        {/* TAB 4: ADMIN (LỊCH HỌC TRUNG TÂM & CHẤM CÔNG GIÁO VIÊN TỰ ĐỘNG) */}
         {mainRoleTab === 'admin' && isLoggedIn && (
           <div className="space-y-4">
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold">
@@ -910,6 +1006,18 @@ export default function App() {
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>Lớp Học ({classes.length} Lớp)</span>
+              </button>
+
+              <button
+                onClick={() => setAdminSubFeature('schedule')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
+                  adminSubFeature === 'schedule'
+                    ? 'bg-[#1E40AF] text-white shadow-xs'
+                    : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Lịch Học & Chấm Công</span>
               </button>
 
               <button
@@ -1043,6 +1151,20 @@ export default function App() {
                 onDeleteClass={handleDeleteClass}
                 onAddStudentToClass={handleAddStudentToClass}
                 onRemoveStudentFromClass={handleRemoveStudentFromClass}
+              />
+            )}
+
+            {adminSubFeature === 'schedule' && (
+              <ScheduleManager
+                classes={classes}
+                users={users}
+                sessions={sessions}
+                timesheets={timesheets}
+                currentRole="admin"
+                currentUserId={currentUserId}
+                onAddSession={handleAddSession}
+                onAddTimesheetRecord={handleAddTimesheetRecord}
+                onUpdateTimesheetStatus={handleUpdateTimesheetStatus}
               />
             )}
 
@@ -1180,9 +1302,9 @@ export default function App() {
             <span>• Hệ thống Quản lý & Học tập Trung tâm Ngoại ngữ</span>
           </div>
           <div className="flex items-center gap-4 text-[11px] font-semibold text-slate-400">
-            <span>Hơn 20 Lớp Học</span>
+            <span>Thời Khóa Biểu & Chấm Công</span>
             <span>•</span>
-            <span>CMS Truyền Thông & Bản Tin</span>
+            <span>Hơn 20 Lớp Học</span>
             <span>•</span>
             <span>Pre-kids, Kids, Teens, A1-C1, IELTS</span>
           </div>

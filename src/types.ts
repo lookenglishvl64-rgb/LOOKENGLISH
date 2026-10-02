@@ -129,3 +129,29 @@ export interface CenterAnnouncementModel {
   date: string;
   imageUrl?: string;
 }
+
+export interface ScheduleSessionModel {
+  id: string;
+  classId: string;
+  teacherId: string;
+  dayOfWeek: number; // 1: T2, 2: T3, 3: T4, 4: T5, 5: T6, 6: T7, 0: CN
+  dayOfWeekText: string; // e.g. "Thứ Hai", "Thứ Ba", ...
+  timeSlot: string; // e.g. "18:00 - 19:30"
+  room: string; // e.g. "Phòng Lab A201"
+  status?: 'scheduled' | 'completed' | 'cancelled';
+  sessionTopic?: string;
+  durationHours?: number; // e.g. 1.5
+}
+
+export interface TeacherTimesheetModel {
+  id: string;
+  teacherId: string;
+  classId: string;
+  date: string; // YYYY-MM-DD
+  timeSlot: string;
+  room: string;
+  hours: number;
+  status: 'completed' | 'absent' | 'substitute' | 'scheduled';
+  note?: string;
+  confirmedByAdmin?: boolean;
+}

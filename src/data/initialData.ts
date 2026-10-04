@@ -7,6 +7,7 @@ import {
   EvaluationModel,
   CertificateModel,
   LeaderboardModel,
+  TuitionFeeModel,
 } from '../types';
 
 export const INITIAL_USERS: UserModel[] = [
@@ -1133,6 +1134,65 @@ export const INITIAL_STUDENT_CHECKINS: import('../types').StudentCheckInModel[] 
     topicsLearned: 'Animals & Nature adjectives',
     needHelp: false,
     parentNote: 'Con về nhà hát cho mẹ nghe rất hay!',
+  },
+];
+
+export const INITIAL_TUITION_FEES: TuitionFeeModel[] = [
+  {
+    id: 'tui_01',
+    studentId: 'usr_student_2', // Trần Bảo Ngọc (Hannah)
+    classId: 'cls_ielts_01',
+    title: 'Học phí Tháng 10/2026 - Lớp IELTS Intensive 6.5+',
+    periodType: 'month',
+    periodLabel: 'Tháng 10/2026',
+    amount: 2400000,
+    status: 'paid',
+    dueDate: '2026-10-10',
+    paidAt: '2026-10-02 09:15',
+    receiptImageUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=80',
+    note: 'Đã thanh toán chuyển khoản VCB. Trung tâm đã xuất biên lai điện tử.',
+    createdAt: '2026-10-01T08:00:00Z',
+  },
+  {
+    id: 'tui_02',
+    studentId: 'usr_student_2', // Trần Bảo Ngọc (Hannah)
+    classId: 'cls_ielts_01',
+    title: 'Học phí Tuần 41 (08/10 - 14/10) - Chuyên đề Speaking Phản Xạ',
+    periodType: 'week',
+    periodLabel: 'Tuần 41 (08/10 - 14/10)',
+    amount: 600000,
+    status: 'debt',
+    dueDate: '2026-10-12',
+    note: 'Khóa học bổ trợ kỹ năng Speaking 1-on-1 cùng giáo viên bản ngữ.',
+    createdAt: '2026-10-02T10:00:00Z',
+  },
+  {
+    id: 'tui_03',
+    studentId: 'usr_student_1', // Nguyễn Minh Quân (Leo)
+    classId: 'cls_kids_01',
+    title: 'Học phí Tháng 10/2026 - Lớp Kids Starters',
+    periodType: 'month',
+    periodLabel: 'Tháng 10/2026',
+    amount: 1800000,
+    status: 'debt',
+    dueDate: '2026-10-10',
+    note: 'Đã gửi thông báo học phí tới phụ huynh qua Zalo & ứng dụng.',
+    createdAt: '2026-10-01T08:00:00Z',
+  },
+  {
+    id: 'tui_04',
+    studentId: 'usr_student_3', // Lê Hoàng Long
+    classId: 'cls_a2_01',
+    title: 'Học phí Tháng 10/2026 - Lớp Cambridge Flyers',
+    periodType: 'month',
+    periodLabel: 'Tháng 10/2026',
+    amount: 2200000,
+    status: 'paid',
+    dueDate: '2026-10-10',
+    paidAt: '2026-10-01 16:30',
+    receiptImageUrl: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&auto=format&fit=crop&q=80',
+    note: 'Đã thanh toán tiền mặt tại quầy lễ tân.',
+    createdAt: '2026-10-01T08:00:00Z',
   },
 ];
 

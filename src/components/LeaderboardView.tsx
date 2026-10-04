@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import confetti from 'canvas-confetti';
+import { MediaDropzone } from './MediaDropzone';
 import { ClassModel, LeaderboardModel, UserModel, UserRole } from '../types';
 import {
   Trophy,
@@ -574,76 +575,28 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                 />
               </div>
 
-              {/* MEDIA ATTACHMENTS (IMAGE & VIDEO) */}
+              {/* MEDIA ATTACHMENTS (IMAGE & VIDEO DIRECT UPLOAD) */}
               <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-3">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-amber-700" />
-                  <span className="font-black text-amber-950 text-xs">Đính Kèm Hình Ảnh & Video Vào Bài Đăng</span>
+                  <span className="font-black text-amber-950 text-xs">Đính Kèm Hình Ảnh & Video Vinh Danh (Tải Từ Máy Tính)</span>
                 </div>
 
-                {/* Image Upload / URL */}
-                <div>
-                  <label className="font-bold text-slate-700 block text-xs mb-1">Hình Ảnh Vinh Danh / Trao Giải</label>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
+                <MediaDropzone
+                  label="Hình Ảnh Vinh Danh / Trao Giải (Tải từ máy tính)"
+                  sublabel="Chọn file ảnh học sinh nhận giải, nhận bằng khen từ máy tính của bạn"
+                  accept="image"
+                  valueUrl={imageUrl}
+                  onChangeUrl={setImageUrl}
+                />
 
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Dán link ảnh hoặc tải ảnh lên bên cạnh"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-slate-200 rounded-xl bg-white text-xs focus:ring-2 focus:ring-amber-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-2 bg-white border border-amber-300 hover:bg-amber-100 rounded-xl text-amber-900 font-bold text-xs inline-flex items-center gap-1 shrink-0"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Chọn ảnh</span>
-                    </button>
-                  </div>
-
-                  {imageUrl && (
-                    <div className="mt-2 flex items-center gap-3 bg-white p-2 rounded-xl border border-amber-200">
-                      <img
-                        src={imageUrl}
-                        alt="Preview"
-                        className="w-14 h-14 object-cover rounded-lg border border-slate-200 shrink-0"
-                      />
-                      <div className="text-xs">
-                        <span className="font-bold text-slate-800 block">Xem trước ảnh vinh danh</span>
-                        <span className="text-[11px] text-emerald-600 font-semibold">✓ Đã tải ảnh thành công</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Video URL */}
-                <div>
-                  <label className="font-bold text-slate-700 block text-xs mb-1">Link Video Vinh Danh / Phỏng Vấn (Tùy chọn)</label>
-                  <div className="flex items-center gap-2">
-                    <div className="relative flex-1">
-                      <Video className="w-4 h-4 text-red-500 absolute left-3 top-2.5 pointer-events-none" />
-                      <input
-                        type="text"
-                        placeholder="Link YouTube, MP4 hoặc video bài phát biểu (VD: https://youtube.com/...)"
-                        value={videoUrl}
-                        onChange={(e) => setVideoUrl(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl bg-white text-xs focus:ring-2 focus:ring-amber-500"
-                      />
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    Gắn link video giúp phụ huynh và các bạn học sinh khác có thể xem trực tiếp phần phát biểu hoặc trao cúp.
-                  </p>
-                </div>
+                <MediaDropzone
+                  label="Video Clip Vinh Danh / Phỏng Vấn (Tải từ máy tính hoặc YouTube)"
+                  sublabel="Chọn file video MP4 từ máy tính hoặc dán link video phỏng vấn"
+                  accept="video"
+                  valueUrl={videoUrl}
+                  onChangeUrl={setVideoUrl}
+                />
               </div>
 
               <div className="pt-2 flex justify-end gap-2">

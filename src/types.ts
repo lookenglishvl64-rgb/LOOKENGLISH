@@ -199,3 +199,23 @@ export interface StudentCheckInModel {
     createdAt: string;
   };
 }
+
+// Tuition Fee Management (Mục Tiền Học Phí)
+export type TuitionPeriodType = 'week' | 'month';
+export type TuitionStatus = 'paid' | 'debt';
+
+export interface TuitionFeeModel {
+  id: string;
+  studentId: string;
+  classId?: string;
+  title: string; // e.g. "Học phí Tháng 10/2026" or "Học phí Tuần 40"
+  periodType: TuitionPeriodType; // 'week' | 'month'
+  periodLabel: string; // e.g. "Tháng 10/2026", "Tuần 40 (01/10 - 07/10)"
+  amount: number; // e.g. 2500000 (VNĐ)
+  status: TuitionStatus; // 'debt' (Nợ) | 'paid' (Đã thanh toán)
+  dueDate: string; // Hạn chót đóng học phí YYYY-MM-DD
+  paidAt?: string; // Thời gian đóng học phí (YYYY-MM-DD HH:mm)
+  receiptImageUrl?: string; // Hình ảnh biên lai thu tiền / ủy nhiệm chi
+  note?: string; // Ghi chú học bổng, chiết khấu hoặc hình thức chuyển khoản
+  createdAt: string;
+}

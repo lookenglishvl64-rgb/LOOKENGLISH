@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { MediaDropzone } from './MediaDropzone';
 import {
   HomeBannerModel,
   CenterAnnouncementModel,
@@ -758,29 +759,23 @@ export const PublicHome: React.FC<PublicHomeProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="font-bold text-slate-700 block mb-1">Link Ảnh Bìa (Image URL) *</label>
-                <input
-                  type="url"
-                  required
-                  placeholder="https://..."
-                  value={mediaFormData.imageUrl}
-                  onChange={(e) => setMediaFormData({ ...mediaFormData, imageUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 font-mono text-xs"
-                />
-              </div>
+              <MediaDropzone
+                label="Hình Ảnh Hoạt Động (Tải trực tiếp từ máy tính)"
+                sublabel="Bấm hoặc kéo thả trực tiếp file ảnh từ máy tính của bạn"
+                accept="image"
+                valueUrl={mediaFormData.imageUrl}
+                onChangeUrl={(url) => setMediaFormData({ ...mediaFormData, imageUrl: url })}
+                required
+              />
 
               {mediaFormData.type === 'video' && (
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Link Video (YouTube / MP4)</label>
-                  <input
-                    type="url"
-                    placeholder="https://youtube.com/watch?v=..."
-                    value={mediaFormData.videoUrl}
-                    onChange={(e) => setMediaFormData({ ...mediaFormData, videoUrl: e.target.value })}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600 font-mono text-xs"
-                  />
-                </div>
+                <MediaDropzone
+                  label="Video Clip Hoạt Động (Tải từ máy tính hoặc YouTube)"
+                  sublabel="Chọn file video MP4/MOV từ máy tính hoặc dán link video"
+                  accept="video"
+                  valueUrl={mediaFormData.videoUrl || ''}
+                  onChangeUrl={(url) => setMediaFormData({ ...mediaFormData, videoUrl: url })}
+                />
               )}
 
               <div>
@@ -882,6 +877,14 @@ export const PublicHome: React.FC<PublicHomeProps> = ({
                   className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-600"
                 />
               </div>
+
+              <MediaDropzone
+                label="Hình Ảnh Đính Kèm Bản Tin (Tải trực tiếp từ máy tính)"
+                sublabel="Chọn file ảnh từ máy tính để hiển thị cùng bài viết thông báo"
+                accept="image"
+                valueUrl={ancFormData.imageUrl}
+                onChangeUrl={(url) => setAncFormData({ ...ancFormData, imageUrl: url })}
+              />
 
               <div className="pt-2 flex justify-end gap-2">
                 <button
@@ -1034,69 +1037,28 @@ export const PublicHome: React.FC<PublicHomeProps> = ({
                 />
               </div>
 
-              {/* MEDIA ATTACHMENTS (IMAGE & VIDEO) */}
+              {/* MEDIA ATTACHMENTS (IMAGE & VIDEO DIRECT UPLOAD) */}
               <div className="p-4 bg-amber-50/60 rounded-2xl border border-amber-200/80 space-y-3">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-amber-700" />
-                  <span className="font-black text-amber-950 text-xs">Đính Kèm Hình Ảnh & Video Vào Bài Đăng</span>
+                  <span className="font-black text-amber-950 text-xs">Đính Kèm Hình Ảnh & Video Vinh Danh (Tải Từ Máy Tính)</span>
                 </div>
 
-                <div>
-                  <label className="font-bold text-slate-700 block text-xs mb-1">Hình Ảnh Vinh Danh</label>
-                  <input
-                    type="file"
-                    ref={lbFileInputRef}
-                    onChange={handleLbFileChange}
-                    accept="image/*"
-                    className="hidden"
-                  />
+                <MediaDropzone
+                  label="Hình Ảnh Vinh Danh Học Viên (Tải trực tiếp từ máy tính)"
+                  sublabel="Chọn file ảnh học sinh nhận giải / cúp từ máy tính của bạn"
+                  accept="image"
+                  valueUrl={lbFormData.imageUrl}
+                  onChangeUrl={(url) => setLbFormData({ ...lbFormData, imageUrl: url })}
+                />
 
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Dán link ảnh hoặc tải ảnh lên"
-                      value={lbFormData.imageUrl}
-                      onChange={(e) => setLbFormData({ ...lbFormData, imageUrl: e.target.value })}
-                      className="flex-1 px-3 py-2 border border-slate-200 rounded-xl bg-white text-xs focus:ring-2 focus:ring-amber-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => lbFileInputRef.current?.click()}
-                      className="px-3 py-2 bg-white border border-amber-300 hover:bg-amber-100 rounded-xl text-amber-900 font-bold text-xs inline-flex items-center gap-1 shrink-0"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Chọn ảnh</span>
-                    </button>
-                  </div>
-
-                  {lbFormData.imageUrl && (
-                    <div className="mt-2 flex items-center gap-3 bg-white p-2 rounded-xl border border-amber-200">
-                      <img
-                        src={lbFormData.imageUrl}
-                        alt="Preview"
-                        className="w-14 h-14 object-cover rounded-lg border border-slate-200 shrink-0"
-                      />
-                      <div className="text-xs">
-                        <span className="font-bold text-slate-800 block">Xem trước ảnh</span>
-                        <span className="text-[11px] text-emerald-600 font-semibold">✓ Đã sẵn sàng</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block text-xs mb-1">Link Video Vinh Danh / Phỏng Vấn (Tùy chọn)</label>
-                  <div className="relative">
-                    <Video className="w-4 h-4 text-red-500 absolute left-3 top-2.5 pointer-events-none" />
-                    <input
-                      type="text"
-                      placeholder="https://youtube.com/... hoặc video mp4"
-                      value={lbFormData.videoUrl}
-                      onChange={(e) => setLbFormData({ ...lbFormData, videoUrl: e.target.value })}
-                      className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl bg-white text-xs focus:ring-2 focus:ring-amber-500"
-                    />
-                  </div>
-                </div>
+                <MediaDropzone
+                  label="Video Clip Vinh Danh / Phỏng Vấn (Tải từ máy tính hoặc YouTube)"
+                  sublabel="Chọn file video MP4 từ máy tính hoặc dán link video"
+                  accept="video"
+                  valueUrl={lbFormData.videoUrl || ''}
+                  onChangeUrl={(url) => setLbFormData({ ...lbFormData, videoUrl: url })}
+                />
               </div>
 
               <div className="pt-2 flex justify-end gap-2">

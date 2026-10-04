@@ -15,6 +15,7 @@ import {
   ScheduleSessionModel,
   TeacherTimesheetModel,
   StudentCheckInModel,
+  TuitionFeeModel,
 } from './types';
 import {
   INITIAL_USERS,
@@ -31,6 +32,7 @@ import {
   INITIAL_SCHEDULE_SESSIONS,
   INITIAL_TEACHER_TIMESHEETS,
   INITIAL_STUDENT_CHECKINS,
+  INITIAL_TUITION_FEES,
 } from './data/initialData';
 import { Header } from './components/Header';
 import { RoleTabsBar } from './components/RoleTabsBar';
@@ -45,9 +47,11 @@ import { EvaluationManager } from './components/EvaluationManager';
 import { CertificateVault } from './components/CertificateVault';
 import { LeaderboardView } from './components/LeaderboardView';
 import { QuickCheckInManager } from './components/QuickCheckInManager';
+import { TuitionFeeManager } from './components/TuitionFeeManager';
 import { AccountManager } from './components/AccountManager';
 import { AiAssistantTab } from './components/AiAssistantTab';
 import { AuthModal } from './components/AuthModal';
+import { fetchServerState, pushServerState, clearMockDataOnServer } from './services/apiSync';
 
 import {
   BookOpen,
@@ -65,6 +69,8 @@ import {
   Lock,
   Smile,
   Star,
+  CreditCard,
+  Trash,
 } from 'lucide-react';
 
 export default function App() {
@@ -72,9 +78,9 @@ export default function App() {
   const [mainRoleTab, setMainRoleTab] = useState<'parent' | 'teacher' | 'admin' | 'news'>('news');
 
   // Active sub-features
-  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'schedule' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'checkin' | 'cms' | 'ai'>('classes');
+  const [adminSubFeature, setAdminSubFeature] = useState<'classes' | 'schedule' | 'students' | 'accounts' | 'attendance' | 'grades' | 'homework' | 'evaluations' | 'tuition' | 'certificates' | 'leaderboard' | 'checkin' | 'cms' | 'ai'>('classes');
   const [teacherSubFeature, setTeacherSubFeature] = useState<'attendance' | 'schedule' | 'grades' | 'homework' | 'evaluations' | 'certificates' | 'classes' | 'checkin' | 'ai'>('attendance');
-  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'evaluations' | 'certificates' | 'leaderboard' | 'checkin' | 'ai'>('checkin');
+  const [parentSubFeature, setParentSubFeature] = useState<'grades' | 'schedule' | 'attendance' | 'homework' | 'evaluations' | 'tuition' | 'certificates' | 'leaderboard' | 'checkin' | 'ai'>('checkin');
 
   // Default state: 'guest' (Chưa đăng nhập - chỉ xem được bản tin)
   const [currentRole, setCurrentRole] = useState<UserRole>('guest');
@@ -172,6 +178,26 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_STUDENT_CHECKINS;
   });
 
+  // Tuition Fees Management (Mục Tiền Học Phí)
+  const [tuitionFees, setTuitionFees] = useState<TuitionFeeModel[]>(() => {
+    const saved = localStorage.getItem('look_english_tuition_fees');
+    return saved ? JSON.parse(saved) : INITIAL_TUITION_FEES;
+  });
+
+  // Hydrate from Server on initial load to guarantee desktop & mobile stay 100% in sync
+  useEffect(() => {
+    fetchServerState().then((serverData) => {
+      if (serverData) {
+        if (Array.isArray(serverData.announcements)) setAnnouncements(serverData.announcements);
+        if (Array.isArray(serverData.mediaItems)) setMediaItems(serverData.mediaItems);
+        if (Array.isArray(serverData.tuitionFees)) setTuitionFees(serverData.tuitionFees);
+        if (Array.isArray(serverData.checkIns)) setCheckIns(serverData.checkIns);
+        if (Array.isArray(serverData.attendance)) setAttendance(serverData.attendance);
+        if (Array.isArray(serverData.evaluations)) setEvaluations(serverData.evaluations);
+      }
+    });
+  }, []);
+
   // Save changes to localStorage
   useEffect(() => {
     localStorage.setItem('look_english_users', JSON.stringify(users));
@@ -207,10 +233,13 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('look_english_announcements', JSON.stringify(announcements));
+    // Push updates to server so phone/desktop instantly sync
+    pushServerState({ announcements });
   }, [announcements]);
 
   useEffect(() => {
     localStorage.setItem('look_english_media_items', JSON.stringify(mediaItems));
+    pushServerState({ mediaItems });
   }, [mediaItems]);
 
   useEffect(() => {
@@ -223,7 +252,13 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('look_english_checkins', JSON.stringify(checkIns));
+    pushServerState({ checkIns });
   }, [checkIns]);
+
+  useEffect(() => {
+    localStorage.setItem('look_english_tuition_fees', JSON.stringify(tuitionFees));
+    pushServerState({ tuitionFees });
+  }, [tuitionFees]);
 
   const currentUser = currentUserId ? users.find((u) => u.id === currentUserId) : undefined;
   const isLoggedIn = currentRole !== 'guest' && !!currentUser;
@@ -663,6 +698,37 @@ export default function App() {
     );
   };
 
+  // Tuition Fee Handlers (Mục Tiền Học Phí)
+  const handleAddTuitionFee = (data: Omit<TuitionFeeModel, 'id'>) => {
+    const newFee: TuitionFeeModel = {
+      ...data,
+      id: `tui_${Date.now()}`,
+    };
+    setTuitionFees((prev) => [newFee, ...prev]);
+  };
+
+  const handleUpdateTuitionFee = (id: string, data: Partial<TuitionFeeModel>) => {
+    setTuitionFees((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, ...data } : f))
+    );
+  };
+
+  const handleDeleteTuitionFee = (id: string) => {
+    setTuitionFees((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  // 1-Click Clear Mock Data on Backend & Client
+  const handleClearMockData = async () => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa toàn bộ tin tức & hình ảnh hoạt động mẫu để bắt đầu nhập dữ liệu thật?')) {
+      setAnnouncements([]);
+      setMediaItems([]);
+      await clearMockDataOnServer();
+      localStorage.setItem('look_english_announcements', JSON.stringify([]));
+      localStorage.setItem('look_english_media_items', JSON.stringify([]));
+      window.alert('Đã xóa sạch toàn bộ mock data tin tức & hoạt động mẫu! Dữ liệu đã được đồng bộ hóa.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* 
@@ -864,6 +930,18 @@ export default function App() {
               </button>
 
               <button
+                onClick={() => setParentSubFeature('tuition')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
+                  parentSubFeature === 'tuition'
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100'
+                }`}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Học Phí & Biên Lai Của Con</span>
+              </button>
+
+              <button
                 onClick={() => setParentSubFeature('certificates')}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
                   parentSubFeature === 'certificates'
@@ -971,6 +1049,20 @@ export default function App() {
                 onAddEvaluation={handleAddEvaluation}
                 onDeleteEvaluation={handleDeleteEvaluation}
                 onUpdateUserStars={handleUpdateUserStars}
+              />
+            )}
+
+            {parentSubFeature === 'tuition' && (
+              <TuitionFeeManager
+                tuitionFees={tuitionFees}
+                users={users}
+                classes={classes}
+                currentRole="parent"
+                currentUserId={currentUser?.id || 'usr_parent_1'}
+                childStudentId={currentUser?.parentOfStudentId || 'usr_student_2'}
+                onAddTuitionFee={handleAddTuitionFee}
+                onUpdateTuitionFee={handleUpdateTuitionFee}
+                onDeleteTuitionFee={handleDeleteTuitionFee}
               />
             )}
 
@@ -1337,6 +1429,18 @@ export default function App() {
               </button>
 
               <button
+                onClick={() => setAdminSubFeature('tuition')}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap ${
+                  adminSubFeature === 'tuition'
+                    ? 'bg-blue-700 text-white shadow-xs'
+                    : 'bg-blue-50 border border-blue-200 text-blue-800 hover:bg-blue-100'
+                }`}
+              >
+                <CreditCard className="w-3.5 h-3.5" />
+                <span>Tiền Học Phí ({tuitionFees.length})</span>
+              </button>
+
+              <button
                 onClick={() => setAdminSubFeature('certificates')}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all ${
                   adminSubFeature === 'certificates'
@@ -1382,6 +1486,16 @@ export default function App() {
               >
                 <Bot className="w-3.5 h-3.5 text-amber-500" />
                 <span>LookEnglish AI</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClearMockData}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl transition-all shrink-0 whitespace-nowrap bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold"
+                title="Xóa toàn bộ mock data tin tức & hoạt động mẫu để bắt đầu nhập dữ liệu thật"
+              >
+                <Trash className="w-3.5 h-3.5" />
+                <span>Xóa Mock Data Tin Tức</span>
               </button>
             </div>
 
@@ -1505,6 +1619,19 @@ export default function App() {
                 onAddEvaluation={handleAddEvaluation}
                 onDeleteEvaluation={handleDeleteEvaluation}
                 onUpdateUserStars={handleUpdateUserStars}
+              />
+            )}
+
+            {adminSubFeature === 'tuition' && (
+              <TuitionFeeManager
+                tuitionFees={tuitionFees}
+                users={users}
+                classes={classes}
+                currentRole="admin"
+                currentUserId={currentUserId}
+                onAddTuitionFee={handleAddTuitionFee}
+                onUpdateTuitionFee={handleUpdateTuitionFee}
+                onDeleteTuitionFee={handleDeleteTuitionFee}
               />
             )}
 

@@ -16,6 +16,7 @@ export interface SyncPayload {
   assignments?: any[];
   checkIns?: any[];
   leaderboard?: any[];
+  bankConfig?: any;
 }
 
 export const fetchServerState = async (): Promise<any | null> => {

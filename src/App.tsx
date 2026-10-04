@@ -16,6 +16,7 @@ import {
   TeacherTimesheetModel,
   StudentCheckInModel,
   TuitionFeeModel,
+  CenterBankConfig,
 } from './types';
 import {
   INITIAL_USERS,
@@ -33,6 +34,7 @@ import {
   INITIAL_TEACHER_TIMESHEETS,
   INITIAL_STUDENT_CHECKINS,
   INITIAL_TUITION_FEES,
+  INITIAL_BANK_CONFIG,
 } from './data/initialData';
 import { Header } from './components/Header';
 import { RoleTabsBar } from './components/RoleTabsBar';
@@ -184,6 +186,12 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_TUITION_FEES;
   });
 
+  // Center Bank Account Configuration (Admin có thể tự do điều chỉnh linh hoạt)
+  const [bankConfig, setBankConfig] = useState<CenterBankConfig>(() => {
+    const saved = localStorage.getItem('look_english_bank_config');
+    return saved ? JSON.parse(saved) : INITIAL_BANK_CONFIG;
+  });
+
   // Hydrate from Server on initial load to guarantee desktop & mobile stay 100% in sync
   useEffect(() => {
     fetchServerState().then((serverData) => {
@@ -194,6 +202,7 @@ export default function App() {
         if (Array.isArray(serverData.checkIns)) setCheckIns(serverData.checkIns);
         if (Array.isArray(serverData.attendance)) setAttendance(serverData.attendance);
         if (Array.isArray(serverData.evaluations)) setEvaluations(serverData.evaluations);
+        if (serverData.bankConfig) setBankConfig(serverData.bankConfig);
       }
     });
   }, []);
@@ -259,6 +268,11 @@ export default function App() {
     localStorage.setItem('look_english_tuition_fees', JSON.stringify(tuitionFees));
     pushServerState({ tuitionFees });
   }, [tuitionFees]);
+
+  useEffect(() => {
+    localStorage.setItem('look_english_bank_config', JSON.stringify(bankConfig));
+    pushServerState({ bankConfig });
+  }, [bankConfig]);
 
   const currentUser = currentUserId ? users.find((u) => u.id === currentUserId) : undefined;
   const isLoggedIn = currentRole !== 'guest' && !!currentUser;
@@ -1060,6 +1074,8 @@ export default function App() {
                 currentRole="parent"
                 currentUserId={currentUser?.id || 'usr_parent_1'}
                 childStudentId={currentUser?.parentOfStudentId || 'usr_student_2'}
+                bankConfig={bankConfig}
+                onUpdateBankConfig={setBankConfig}
                 onAddTuitionFee={handleAddTuitionFee}
                 onUpdateTuitionFee={handleUpdateTuitionFee}
                 onDeleteTuitionFee={handleDeleteTuitionFee}
@@ -1629,6 +1645,8 @@ export default function App() {
                 classes={classes}
                 currentRole="admin"
                 currentUserId={currentUserId}
+                bankConfig={bankConfig}
+                onUpdateBankConfig={setBankConfig}
                 onAddTuitionFee={handleAddTuitionFee}
                 onUpdateTuitionFee={handleUpdateTuitionFee}
                 onDeleteTuitionFee={handleDeleteTuitionFee}

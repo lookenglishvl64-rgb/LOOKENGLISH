@@ -200,3 +200,17 @@ CREATE TABLE IF NOT EXISTS leaderboard_records (
     stars_count INT DEFAULT 50,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 14. BẢNG CẤU HÌNH TÀI KHOẢN NGÂN HÀNG THU HỌC PHÍ (CENTER_BANK_CONFIG)
+-- Admin có thể tự do điều chỉnh số tài khoản, tên ngân hàng linh hoạt mọi lúc
+CREATE TABLE IF NOT EXISTS center_bank_config (
+    id VARCHAR(32) PRIMARY KEY DEFAULT 'current',
+    bank_name VARCHAR(255) NOT NULL, -- Ví dụ: "Vietcombank (VCB)", "MB Bank"
+    account_number VARCHAR(64) NOT NULL, -- Số tài khoản
+    account_holder VARCHAR(255) NOT NULL, -- Tên chủ tài khoản hoặc tên trung tâm
+    branch VARCHAR(255), -- Chi nhánh ngân hàng
+    qr_image_url TEXT, -- Ảnh mã QR thanh toán (tải trực tiếp từ máy tính)
+    note TEXT, -- Ghi chú hướng dẫn thêm khi phụ huynh chuyển khoản
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+

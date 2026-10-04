@@ -8,6 +8,7 @@ import {
   CertificateModel,
   LeaderboardModel,
   TuitionFeeModel,
+  CenterBankConfig,
 } from '../types';
 
 export const INITIAL_USERS: UserModel[] = [
@@ -1195,4 +1196,13 @@ export const INITIAL_TUITION_FEES: TuitionFeeModel[] = [
     createdAt: '2026-10-01T08:00:00Z',
   },
 ];
+
+export const INITIAL_BANK_CONFIG: CenterBankConfig = {
+  bankName: 'Vietcombank (VCB)',
+  accountNumber: '0121000678999',
+  accountHolder: 'TT NGOAI NGU LOOK ENGLISH',
+  branch: 'Chi nhánh Vĩnh Long',
+  note: 'Vui lòng ghi đúng cú pháp chuyển khoản để hệ thống tự động nhận diện và đối soát nhanh nhất.',
+};
+
 

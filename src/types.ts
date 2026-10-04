@@ -219,3 +219,14 @@ export interface TuitionFeeModel {
   note?: string; // Ghi chú học bổng, chiết khấu hoặc hình thức chuyển khoản
   createdAt: string;
 }
+
+// Cấu hình tài khoản ngân hàng chuyển khoản trung tâm (Admin tự điều chỉnh linh hoạt)
+export interface CenterBankConfig {
+  bankName: string; // Tên ngân hàng (Vietcombank, MB Bank, Techcombank, ...)
+  accountNumber: string; // Số tài khoản ngân hàng
+  accountHolder: string; // Tên chủ tài khoản / Tên trung tâm
+  branch?: string; // Chi nhánh (tùy chọn)
+  qrImageUrl?: string; // Ảnh mã QR chuyển khoản (tải trực tiếp từ máy tính)
+  note?: string; // Ghi chú hướng dẫn thêm
+}
+
